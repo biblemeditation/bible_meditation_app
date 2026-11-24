@@ -2,10 +2,10 @@
 // firebaseConfig 값을 복사해 아래 따옴표 안에 붙여 넣으세요.
 // 이 값들은 공개되어도 괜찮은 식별 정보입니다. 데이터는 firestore.rules가 지켜 줍니다.
 export const firebaseConfig = {
-  apiKey: "여기에_apiKey",
-  authDomain: "여기에_프로젝트ID.firebaseapp.com",
-  projectId: "여기에_프로젝트ID",
-  storageBucket: "여기에_프로젝트ID.appspot.com",
-  messagingSenderId: "여기에_messagingSenderId",
-  appId: "여기에_appId"
+  apiKey: "AIzaSyBsJP6WggVdveO-ToJJcPFSma4A1s6lKzg",
+  authDomain: "bible-note-d8c3e.firebaseapp.com",
+  projectId: "bible-note-d8c3e",
+  storageBucket: "bible-note-d8c3e.firebasestorage.appm",
+  messagingSenderId: "11141727223",
+  appId: "1:111417272233:web:d683f6c409bf5507e446b8"
 };

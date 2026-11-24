@@ -145,26 +145,26 @@ button:disabled{cursor:not-allowed;opacity:.45}
 .tag:empty{display:none}
 .tag .sw{box-shadow:0 0 0 1px color-mix(in srgb,var(--hero-fg) 45%,transparent)}
 
-/* advent wreath */
-.wreath{display:flex;flex-direction:column;align-items:center;gap:6px}
-.candles{display:flex;align-items:flex-end;gap:16px;padding:0 16px;position:relative}
-.candles::before{content:"";position:absolute;left:2px;right:2px;bottom:24px;height:15px;border-radius:999px;z-index:0;
-  background:
-    radial-gradient(circle at 9% 45%,var(--berry) 0 3px,transparent 4px),
-    radial-gradient(circle at 31% 70%,var(--berry) 0 2.5px,transparent 3.5px),
-    radial-gradient(circle at 68% 35%,var(--berry) 0 3px,transparent 4px),
-    radial-gradient(circle at 90% 62%,var(--berry) 0 2.5px,transparent 3.5px),
-    repeating-linear-gradient(115deg,var(--garland) 0 7px,var(--garland-2) 7px 12px)}
-.candle{display:flex;flex-direction:column;align-items:center;position:relative;z-index:1}
-.flame{width:11px;height:18px;margin-bottom:3px;border-radius:50% 50% 50% 50% / 62% 62% 38% 38%;background:radial-gradient(circle at 50% 72%,var(--flame-core) 0 22%,var(--flame) 50%,transparent 74%);opacity:0;transform-origin:50% 100%;transition:opacity .5s}
-.candle.lit .flame{opacity:1;animation:flicker 2.6s ease-in-out infinite;filter:drop-shadow(0 0 7px var(--flame))}
-.candle:nth-child(2) .flame{animation-delay:-.7s}.candle:nth-child(4) .flame{animation-delay:-1.3s}.candle:nth-child(5) .flame{animation-delay:-1.9s}
-.wax{width:15px;height:54px;border-radius:4px 4px 2px 2px;background:linear-gradient(90deg,hsl(0 0% 100% / .22),transparent 45%,hsl(0 0% 0% / .2)),var(--wax)}
-.candle.center .wax{height:72px;width:18px}
-.candle em{font-style:normal;font-size:11px;color:var(--hero-muted);margin-top:28px;letter-spacing:.04em;white-space:nowrap}
-.candle.lit em{color:var(--hero-fg)}
+/* advent wreath (SVG drawn by buildWreath) */
+.wreath{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.wreath-svg{width:min(330px,100%);height:auto;display:block;overflow:visible}
+.wreath-svg .fl{opacity:0;transition:opacity .6s ease}
+.wreath-svg .lit .fl{opacity:1}
+.wreath-svg .glow{opacity:0;transition:opacity .9s ease;mix-blend-mode:screen}
+.wreath-svg .glow.lit{opacity:1}
+.wreath-svg .flame{transform-box:fill-box;transform-origin:50% 100%}
+.wreath-svg .lit .flame{animation:flicker 2.8s ease-in-out infinite}
+.wreath-svg .lit .flame.core{animation-duration:2.1s}
+.wreath-svg .glow.lit circle{animation:glowpulse 3.6s ease-in-out infinite}
+.wreath-svg .lit .wick-tip{fill:#ffb347}
+@keyframes flicker{0%,100%{transform:scale(1,1) rotate(-1.5deg)}25%{transform:scale(.95,1.06) rotate(1deg)}55%{transform:scale(1.03,.94) rotate(-.5deg)}80%{transform:scale(.98,1.04) rotate(1.5deg)}}
+@keyframes glowpulse{0%,100%{opacity:1}50%{opacity:.78}}
+.wreath-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;margin:0;padding:0;list-style:none;font-size:11.5px;color:var(--hero-muted)}
+.wreath-legend li{display:inline-flex;align-items:center;gap:5px}
+.wreath-legend i{width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1px color-mix(in srgb,var(--hero-fg) 30%,transparent)}
+.wreath-legend li.on{color:var(--hero-fg)}
+.wreath-legend li.on i{box-shadow:0 0 0 1px var(--hero-fg),0 0 9px 2px hsl(42 95% 62% / .8)}
 .wreath-note{font-size:12px;color:var(--hero-muted);text-align:center;max-width:300px}
-@keyframes flicker{0%,100%{transform:scale(1,1) rotate(-1deg)}30%{transform:scale(.94,1.08) rotate(1.5deg)}60%{transform:scale(1.04,.95) rotate(-.5deg)}}
 
 /* church-year strip */
 .yearband{margin-top:22px}
@@ -358,6 +358,26 @@ details summary{cursor:pointer;font-size:13px;color:var(--muted)}
 .toast{position:fixed;z-index:70;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom, 0px) + 18px);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:13.5px;box-shadow:var(--shadow);max-width:calc(100% - 32px);text-align:center}
 .copybox{width:100%;min-height:120px;font-size:12.5px}
 
+/* passage reader popup */
+.noscroll,.noscroll body{overflow:hidden}
+.reader{position:fixed;inset:0;z-index:80;display:grid;place-items:center;
+  padding:max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))}
+.reader-backdrop{position:absolute;inset:0;background:hsl(var(--h) 30% 6% / .62);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.reader-sheet{position:relative;width:min(900px,100%);height:min(88vh,100%);background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;animation:sheetIn .22s ease-out}
+.reader-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 14px 14px 22px;border-bottom:1px solid var(--line)}
+.reader-head div{min-width:0}
+.reader-k{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--accent)}
+.reader-head h2{font-family:var(--font-display);font-size:20px;font-weight:700;margin-top:3px;text-wrap:balance}
+.reader-x{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--sunk);color:var(--fg);cursor:pointer;display:grid;place-items:center;padding:0}
+.reader-x svg{width:18px;height:18px}
+.reader-x:hover{border-color:var(--accent)}
+.reader-body{position:relative;min-height:0;background:var(--surface)}
+.reader-body iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--surface)}
+.reader-loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:14px;background:var(--surface);z-index:1;pointer-events:none}
+.reader-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;padding:10px 16px 12px 22px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.reader-foot a{color:var(--accent);font-weight:500}
+@keyframes sheetIn{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+
 /* phone: tabs */
 .tabbar{display:none}
 @media (max-width:759px){
@@ -375,6 +395,8 @@ details summary{cursor:pointer;font-size:13px;color:var(--muted)}
   .theme-row{padding:6px 6px 6px 12px;border-radius:18px}
   .yb-labels{display:none}
   .toast{bottom:calc(env(safe-area-inset-bottom, 0px) + 92px)}
+  .reader{padding:0;place-items:end stretch}
+  .reader-sheet{width:100%;height:calc(100% - env(safe-area-inset-top, 0px) - 10px);border-radius:20px 20px 0 0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom, 0px)}
   .tabbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;position:fixed;left:0;right:0;bottom:0;z-index:50;
     background:color-mix(in srgb,var(--surface) 86%,transparent);-webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%);
     border-top:1px solid var(--line);
@@ -385,7 +407,8 @@ details summary{cursor:pointer;font-size:13px;color:var(--muted)}
 }
 @media (prefers-reduced-motion: reduce){
   *{transition:none!important}
-  .candle.lit .flame{animation:none}
+  .wreath-svg .lit .flame,.wreath-svg .glow.lit circle{animation:none}
+  .reader-sheet{animation:none}
 }
 </style>
 </head>
@@ -416,13 +439,8 @@ details summary{cursor:pointer;font-size:13px;color:var(--muted)}
         </div>
       </div>
       <div class="wreath" id="wreath" role="img">
-        <div class="candles">
-          <div class="candle" data-n="1" style="--wax:var(--wax-purple)"><span class="flame"></span><span class="wax"></span><em>소망</em></div>
-          <div class="candle" data-n="2" style="--wax:var(--wax-purple)"><span class="flame"></span><span class="wax"></span><em>평화</em></div>
-          <div class="candle center" data-n="5" style="--wax:var(--wax-white)"><span class="flame"></span><span class="wax"></span><em>그리스도</em></div>
-          <div class="candle" data-n="3" style="--wax:var(--wax-pink)"><span class="flame"></span><span class="wax"></span><em>기쁨</em></div>
-          <div class="candle" data-n="4" style="--wax:var(--wax-purple)"><span class="flame"></span><span class="wax"></span><em>사랑</em></div>
-        </div>
+        <svg class="wreath-svg" id="wreathSvg" viewBox="0 0 340 234" aria-hidden="true"></svg>
+        <ul class="wreath-legend" id="wreathLegend" aria-hidden="true"></ul>
         <p class="wreath-note" id="wreathNote"></p>
       </div>
     </div>
@@ -467,8 +485,8 @@ details summary{cursor:pointer;font-size:13px;color:var(--muted)}
         <figcaption id="rCite"></figcaption>
       </figure>
       <div class="read-row">
-        <a class="btn btn-primary" id="rLink" target="_blank" rel="noopener">본문 전체 읽기 · 개역개정 ↗</a>
-        <span class="muted">대한성서공회 성경 읽기 페이지가 새 창으로 열립니다</span>
+        <a class="btn btn-primary" id="rLink" target="_blank" rel="noopener">본문 전체 읽기 · 개역개정</a>
+        <span class="muted" id="rLinkHint">본문이 팝업으로 열리고, 오른쪽 위 ×를 누르면 닫힙니다</span>
       </div>
       <ol class="steps">
         <li><span class="step-k">읽기</span><p>본문을 천천히 두 번 읽습니다. 처음에는 이야기의 흐름을, 두 번째는 마음에 머무는 단어 하나를 찾습니다.</p></li>
@@ -586,6 +604,20 @@ details summary{cursor:pointer;font-size:13px;color:var(--muted)}
   <p class="ab-t" id="abT"></p>
   <p class="ab-b" id="abB"></p>
   <div class="row"><button class="btn btn-primary btn-sm" id="abGo">지금 묵상하기</button><button class="btn btn-sm" id="abClose">닫기</button></div>
+</div>
+<div class="reader" id="reader" role="dialog" aria-modal="true" aria-labelledby="readerTitle" hidden>
+  <div class="reader-backdrop" data-close></div>
+  <div class="reader-sheet">
+    <header class="reader-head">
+      <div><p class="reader-k" id="readerK">개역개정 본문</p><h2 id="readerTitle"></h2></div>
+      <button class="reader-x" id="readerClose" type="button" aria-label="본문 닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </header>
+    <div class="reader-body">
+      <div class="reader-loading" id="readerLoading">본문을 불러오는 중입니다…</div>
+      <iframe id="readerFrame" title="개역개정 성경 본문" referrerpolicy="no-referrer"></iframe>
+    </div>
+    <footer class="reader-foot"><span>성경 본문 · 대한성서공회 개역개정</span><a id="readerExt" target="_blank" rel="noopener">본문이 보이지 않으면 새 창에서 열기 ↗</a></footer>
+  </div>
 </div>
 <div class="toast" id="toast" role="status" hidden></div>
 
@@ -1065,9 +1097,7 @@ function renderHero(){
   $("#hSwatch").style.setProperty("--sw", L.sw);
   $("#hSeason").textContent = L.title;
   $("#hSeasonSub").textContent = L.sub || "";
-  const h = $("#hTitle"); h.textContent = "";
-  const em = document.createElement("em"); em.textContent = "의 교회력";
-  h.append(document.createTextNode(`${sel.getFullYear()}년 ${mdw(sel)}`), em);
+  $("#hTitle").textContent = `${sel.getFullYear()}년 ${mdw(sel)}`;
   $("#hColor").textContent = `절기 색 · ${L.colorName}`;
   $("#hCount").textContent = L.count || "";
   $("#hTheme").textContent = theme === "auto" || theme === L.season ? "" : `화면 색 · ${SEASONS[theme].name} (직접 선택)`;
@@ -1079,7 +1109,7 @@ function renderHero(){
   wreath.hidden = !showWreath;
   if (showWreath){
     const lit = L.season==="advent" ? (L.eve ? 4 : L.week) : L.season==="christmas" ? 5 : 0;
-    wreath.querySelectorAll(".candle").forEach(c => c.classList.toggle("lit", +c.dataset.n <= lit));
+    updateWreath(lit);
     let note;
     if (L.season==="advent") note = L.eve ? "네 촛불이 모두 켜졌습니다. 오늘 밤 그리스도의 촛불을 기다립니다." : `${CANDLE[L.week-1]}의 촛불까지 ${L.week}개가 켜졌습니다.`;
     else if (L.season==="christmas") note = "가운데 그리스도의 촛불이 켜졌습니다. 성탄을 축하합니다.";
@@ -1446,6 +1476,137 @@ function renderAlarm(){
 }
 function renderAll(){ renderHero(); renderReading(); renderMemoBox(false); renderCalendar(); renderArchive(); renderReservations(); renderAlarm(); renderAccount(); }
 
+/* ===================== 대림절 화환 (SVG) ===================== */
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const WREATH_CANDLES = [
+  {n:1, label:"소망", kind:"purple", t:2.18, c:"#8b69c4"},
+  {n:2, label:"평화", kind:"purple", t:3.58, c:"#8b69c4"},
+  {n:3, label:"기쁨", kind:"rose",   t:5.85, c:"#eaa3c1"},
+  {n:4, label:"사랑", kind:"purple", t:0.96, c:"#8b69c4"},
+  {n:5, label:"그리스도", kind:"white", c:"#fffaf0"}
+];
+function buildWreath(){
+  const svg = $("#wreathSvg");
+  if (!svg || svg.childElementCount) return;
+  const R = mulberry32(20261129), f = n => Math.round(n*10)/10;
+  const CX = 170, CY = 168, RX = 128, RY = 40;
+  const tangent = t => Math.atan2(RY*Math.cos(t), -RX*Math.sin(t));
+  const items = [], glows = [];
+  const greens = ["#143823","#1a4429","#204f30","#275c37","#2f6a3f","#387848","#468752","#58985f"];
+  // 1) 상록수 잎 덩어리
+  for (let i=0; i<300; i++){
+    const t = (i/300)*Math.PI*2 + (R()-.5)*0.07, k = 0.8 + R()*0.38;
+    const depth = (Math.sin(t)+1)/2, mound = 1 - Math.min(1, Math.abs(k-0.99)/0.2);
+    const x = CX + RX*k*Math.cos(t), y = CY + RY*k*Math.sin(t) - mound*11*R() - 3;
+    const rot = tangent(t)*180/Math.PI + (R()-.5)*110;
+    const len = 8 + R()*9, wid = 2.4 + R()*2.4;
+    const shade = Math.max(0, Math.min(greens.length-1, Math.round(depth*2.6 + mound*2.4 + R()*2.2 - .6)));
+    items.push({y, s:`<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(len)}" ry="${f(wid)}" transform="rotate(${f(rot)} ${f(x)} ${f(y)})" fill="${greens[shade]}"/>`});
+  }
+  // 2) 솔잎 가지 (결)
+  for (let i=0; i<130; i++){
+    const t = R()*Math.PI*2, k = 0.84 + R()*0.32;
+    const depth = (Math.sin(t)+1)/2, mound = 1 - Math.min(1, Math.abs(k-1)/0.18);
+    const x = CX + RX*k*Math.cos(t), y = CY + RY*k*Math.sin(t) - mound*12*R() - 4;
+    const a = tangent(t) + (R()-.5)*1.5 + (R() < .5 ? 0 : Math.PI);
+    const len = 10 + R()*10, ex = x + Math.cos(a)*len, ey = y + Math.sin(a)*len*0.72;
+    let d = `M${f(x)} ${f(y)}L${f(ex)} ${f(ey)}`;
+    for (let j=1; j<=6; j++){
+      const px = x + (ex-x)*j/7, py = y + (ey-y)*j/7, nl = 5.2*(1 - j/8);
+      for (const sg of [-1, 1]){ const na = a + sg*0.75; d += `M${f(px)} ${f(py)}l${f(Math.cos(na)*nl)} ${f(Math.sin(na)*nl*0.72)}`; }
+    }
+    const col = depth > .55 ? (R() < .5 ? "#5f9e63" : "#4e8d57") : (R() < .5 ? "#3c7547" : "#33693f");
+    items.push({y: y+1, s:`<path d="${d}" stroke="${col}" stroke-width="1.05" stroke-linecap="round" fill="none" opacity="${f(.6 + depth*.4)}"/>`});
+  }
+  // 3) 솔방울
+  [[1.62, 1.03],[4.45, 0.97],[0.28, 1.0],[2.95, 1.02]].forEach(([t, k]) => {
+    const x = CX + RX*k*Math.cos(t), y = CY + RY*k*Math.sin(t) - 7;
+    const rot = tangent(t)*180/Math.PI + 18;
+    let g = `<g transform="translate(${f(x)} ${f(y)}) rotate(${f(rot)})"><ellipse rx="10.5" ry="6.6" fill="url(#wPine)"/>`;
+    for (const [sx, sy] of [[-7,-1.8],[-7,2.2],[-3,-4],[-3,0],[-3,4],[1,-3.6],[1,.4],[1,4.2],[5,-2.2],[5,1.8],[8.4,0]]) g += `<path d="M${sx-2.1} ${sy}q2.1 -2.6 4.2 0" stroke="#2e1c10" stroke-width=".9" fill="none"/>`;
+    items.push({y: y+3, s: g + "</g>"});
+  });
+  // 4) 호랑가시 열매
+  [0.62, 1.32, 2.02, 2.62, 3.25, 3.95, 4.9, 5.45, 6.05].forEach(t => {
+    const k = 0.95 + R()*0.1, bx = CX + RX*k*Math.cos(t), by = CY + RY*k*Math.sin(t) - 9;
+    let g = "";
+    [[0,0],[5.6,1.6],[2.4,-4.4]].forEach(([dx, dy]) => { g += `<circle cx="${f(bx+dx)}" cy="${f(by+dy)}" r="3.7" fill="url(#wBerry)"/>`; });
+    items.push({y: by+4, s: g});
+  });
+  // 5) 초
+  const CAP = {purple:"#7d5bb8", rose:"#e396b7", white:"#fbf6ea"}, POOL = {purple:"#5b3b90", rose:"#c56e95", white:"#e2d8c2"};
+  const candle = (c, x, y, s, H, W) => {
+    const w = W/2, ry = w*0.32, top = -H;
+    let g = `<g class="cdl" data-n="${c.n}" transform="translate(${f(x)} ${f(y)}) scale(${f(s)})">`;
+    if (c.kind === "white") g += `<ellipse cx="0" cy="1.5" rx="${f(w*1.7)}" ry="${f(w*0.5)}" fill="url(#wBrass)"/><ellipse cx="0" cy="0" rx="${f(w*1.25)}" ry="${f(w*0.36)}" fill="#8a6a2c"/>`;
+    g += `<path d="M${-w} ${top}L${-w} 0A${w} ${f(ry)} 0 0 0 ${w} 0L${w} ${top}Z" fill="url(#w_${c.kind})"/>`;
+    [[-w*0.42, 9 + R()*9], [w*0.28, 5 + R()*11]].forEach(([dx, len]) => { g += `<path d="M${f(dx-1.7)} ${top}v${f(len)}a1.7 1.7 0 0 0 3.4 0v${f(-len)}z" fill="${CAP[c.kind]}" opacity=".9"/>`; });
+    g += `<ellipse cx="0" cy="${top}" rx="${w}" ry="${f(ry)}" fill="${CAP[c.kind]}"/>`;
+    g += `<ellipse cx="0" cy="${f(top+0.7)}" rx="${f(w*0.72)}" ry="${f(ry*0.6)}" fill="${POOL[c.kind]}"/>`;
+    g += `<path d="M0 ${top}q.7 -4 .3 -7.4" stroke="#2b221d" stroke-width="1.5" stroke-linecap="round" fill="none"/><circle class="wick-tip" cx=".3" cy="${f(top-7.4)}" r="1.05" fill="#2b221d"/>`;
+    g += `<g class="fl"><path class="flame" d="M.3 ${f(top-4.5)}C6.2 ${f(top-10)} 5.6 ${f(top-21)} .3 ${f(top-34)}C-5 ${f(top-21)} -5.6 ${f(top-10)} .3 ${f(top-4.5)}Z" fill="url(#wFlame)"/>`
+       + `<path class="flame core" d="M.3 ${f(top-5.5)}C3 ${f(top-8.6)} 2.6 ${f(top-14.5)} .3 ${f(top-21)}C-2 ${f(top-14.5)} -2.4 ${f(top-8.6)} .3 ${f(top-5.5)}Z" fill="#fffbea"/>`
+       + `<ellipse cx=".3" cy="${f(top-6)}" rx="2.1" ry="1.4" fill="#8cbcff" opacity=".7"/></g></g>`;
+    glows.push(`<g class="glow" data-n="${c.n}"><circle cx="${f(x)}" cy="${f(y + s*(top-18))}" r="${f(44*s)}" fill="url(#wGlow)"/></g>`);
+    return g;
+  };
+  WREATH_CANDLES.forEach(c => {
+    if (c.kind === "white") { items.push({y: CY - 4, s: candle(c, CX, CY - 4, 0.97, 88, 21)}); return; }
+    const x = CX + RX*Math.cos(c.t), y = CY + RY*Math.sin(c.t) - 2, s = 0.84 + 0.16*(Math.sin(c.t)+1)/2;
+    items.push({y, s: candle(c, x, y, s, 64, 17)});
+  });
+  items.sort((p, q) => p.y - q.y);
+  svg.innerHTML = `<defs>
+    <linearGradient id="w_purple" x1="0" x2="1"><stop offset="0" stop-color="#2c164c"/><stop offset=".24" stop-color="#5a3a8f"/><stop offset=".44" stop-color="#8d6bc6"/><stop offset=".62" stop-color="#6a49a4"/><stop offset="1" stop-color="#2a1448"/></linearGradient>
+    <linearGradient id="w_rose" x1="0" x2="1"><stop offset="0" stop-color="#7a2f52"/><stop offset=".24" stop-color="#c46a93"/><stop offset=".44" stop-color="#efa9c6"/><stop offset=".62" stop-color="#d27ea4"/><stop offset="1" stop-color="#76304f"/></linearGradient>
+    <linearGradient id="w_white" x1="0" x2="1"><stop offset="0" stop-color="#a99c82"/><stop offset=".24" stop-color="#e6dcc8"/><stop offset=".44" stop-color="#fffbf2"/><stop offset=".62" stop-color="#eee5d3"/><stop offset="1" stop-color="#9e917a"/></linearGradient>
+    <radialGradient id="wFlame" cx=".5" cy=".78" r=".7"><stop offset="0" stop-color="#fffbe6"/><stop offset=".32" stop-color="#ffe08a"/><stop offset=".66" stop-color="#ffa53c"/><stop offset="1" stop-color="#ff7a1a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="wGlow"><stop offset="0" stop-color="#ffd27a" stop-opacity=".6"/><stop offset=".4" stop-color="#ffb04d" stop-opacity=".2"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/></radialGradient>
+    <radialGradient id="wBerry" cx=".34" cy=".32" r=".72"><stop offset="0" stop-color="#ff9a96"/><stop offset=".3" stop-color="#d9303b"/><stop offset="1" stop-color="#6e0b16"/></radialGradient>
+    <linearGradient id="wPine" x1="0" x2="1"><stop offset="0" stop-color="#3e2413"/><stop offset=".5" stop-color="#8a5b33"/><stop offset="1" stop-color="#3e2413"/></linearGradient>
+    <linearGradient id="wBrass" x1="0" x2="1"><stop offset="0" stop-color="#6e4f1c"/><stop offset=".45" stop-color="#e8c876"/><stop offset="1" stop-color="#5f4316"/></linearGradient>
+    <radialGradient id="wShadow"><stop offset="0" stop-color="#000" stop-opacity=".42"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+  </defs><ellipse cx="${CX}" cy="${CY+14}" rx="160" ry="34" fill="url(#wShadow)"/>` + items.map(i => i.s).join("") + glows.join("");
+  const lg = $("#wreathLegend");
+  [1,2,3,4,5].forEach(n => {
+    const c = WREATH_CANDLES.find(x => x.n === n), li = document.createElement("li");
+    li.dataset.n = n; li.style.setProperty("--c", c.c);
+    const dot = document.createElement("i"); li.append(dot, document.createTextNode(c.label));
+    lg.appendChild(li);
+  });
+}
+function updateWreath(lit){
+  document.querySelectorAll("#wreathSvg [data-n], #wreathLegend [data-n]").forEach(el => {
+    const on = +el.dataset.n <= lit;
+    el.classList.toggle(el.tagName === "LI" ? "on" : "lit", on);
+  });
+}
+
+/* ===================== 본문 팝업 ===================== */
+const EMBED_READER = true;   // 웹사이트 버전에서 true: claude.ai는 다른 사이트를 페이지 안에 넣을 수 없음
+let readerReturn = null;
+function openReader(){
+  const R = readingFor(liturgy(sel)), info = parseRef(R.r), url = bskUrl(info);
+  $("#readerK").textContent = `${mdw(sel)} · ${R.r} · 개역개정`;
+  $("#readerTitle").textContent = R.t;
+  $("#readerExt").href = url;
+  const fr = $("#readerFrame");
+  $("#readerLoading").hidden = false;
+  fr.onload = () => { if (fr.src !== "about:blank") $("#readerLoading").hidden = true; };
+  fr.src = url;
+  readerReturn = document.activeElement;
+  $("#reader").hidden = false;
+  document.documentElement.classList.add("noscroll");
+  $("#readerClose").focus();
+}
+function closeReader(){
+  if ($("#reader").hidden) return;
+  $("#reader").hidden = true;
+  document.documentElement.classList.remove("noscroll");
+  $("#readerFrame").src = "about:blank";
+  if (readerReturn && readerReturn.focus) readerReturn.focus();
+}
+
 /* ===================== 휴대폰 탭 ===================== */
 const mq = matchMedia("(max-width: 759px)");
 function applyView(){
@@ -1563,6 +1724,9 @@ $("#acctChip").addEventListener("click", () => {
 $("#loginBtn").addEventListener("click", login);
 $("#memoLogin").addEventListener("click", login);
 $("#logoutBtn").addEventListener("click", logout);
+$("#rLink").addEventListener("click", e => { if (!EMBED_READER || e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); openReader(); });
+$("#readerClose").addEventListener("click", closeReader);
+$("#reader").addEventListener("click", e => { if (e.target.closest("[data-close]")) closeReader(); });
 $("#prevDay").addEventListener("click", () => selectDate(addDays(sel,-1)));
 $("#nextDay").addEventListener("click", () => selectDate(addDays(sel,1)));
 $("#todayBtn").addEventListener("click", () => selectDate(today()));
@@ -1676,7 +1840,7 @@ $("#alWake").addEventListener("change", async e => {
 });
 $("#abGo").addEventListener("click", () => { $("#alarmBanner").hidden = true; if (ringDate) selectDate(ringDate, {scroll:true, view:"read"}); });
 $("#abClose").addEventListener("click", () => { $("#alarmBanner").hidden = true; });
-document.addEventListener("keydown", e => { if (e.key === "Escape") $("#alarmBanner").hidden = true; });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { if (!$("#reader").hidden) closeReader(); else $("#alarmBanner").hidden = true; } });
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") { checkAlarms(new Date()); if (state.settings.alarm.wake && !wakeLock) setWake(true); }
   else saveMemoNow();
@@ -1706,6 +1870,7 @@ function tick(){
   const defaultRv = dayNum(A) > dayNum(t) && dayNum(A) - dayNum(t) <= 30 ? A : addDays(t, 1);
   $("#rvDate").value = ymd(defaultRv);
   $("#rvDate").min = ymd(t);
+  buildWreath();
   applyView();
   renderAll();
   tick(); setInterval(tick, 1000);

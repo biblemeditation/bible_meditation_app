@@ -1,0 +1,1718 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="교회력을 따라 날마다 개역개정 말씀을 묵상하고 메모를 남기는 성경묵상노트">
+<meta name="theme-color" content="#3b2463">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="묵상노트">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>성경묵상노트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top, 0px);padding-bottom:env(safe-area-inset-bottom, 0px)}
+body{margin:0}
+img{max-width:100%}
+
+/* Layout: a liturgical stole band on top (season, wreath, church-year strip, glass color picker),
+   then a lectionary page (reading + memo) beside a rail (calendar card, archive, account, reservations, alarm).
+   Under 760px the page becomes four tabs with a bottom bar. */
+:root{
+  --h:270; --ns:22%; --ah:270; --as:42%;
+  --bg: hsl(var(--h) var(--ns) 97%);
+  --surface: hsl(var(--h) var(--ns) 99.4%);
+  --sunk: hsl(var(--h) var(--ns) 94.5%);
+  --fg: hsl(var(--h) 28% 13%);
+  --muted: hsl(var(--h) 10% 40%);
+  --line: hsl(var(--h) 16% 87%);
+  --accent: hsl(var(--ah) var(--as) 36%);
+  --accent-ink: hsl(var(--ah) 40% 98%);
+  --accent-soft: hsl(var(--ah) var(--as) 92%);
+  --hero-1: hsl(var(--ah) var(--as) 19%);
+  --hero-2: hsl(var(--ah) var(--as) 31%);
+  --hero-fg: hsl(var(--ah) 45% 96%);
+  --hero-muted: hsl(var(--ah) 25% 80%);
+  --flame: hsl(42 95% 62%);
+  --flame-core: hsl(50 100% 92%);
+  --wax-purple: hsl(272 38% 50%);
+  --wax-pink: hsl(335 55% 72%);
+  --wax-white: hsl(45 40% 95%);
+  --garland: hsl(140 35% 26%);
+  --garland-2: hsl(140 32% 36%);
+  --berry: hsl(352 65% 48%);
+  --warn: hsl(20 75% 38%);
+  --dot-on: hsl(145 62% 52%);
+  --dot-off: hsl(36 92% 60%);
+  /* glass picker: fixed values, never redefined by season or theme */
+  --glass-top: hsl(0 0% 100% / .16);
+  --glass-bottom: hsl(0 0% 100% / .04);
+  --glass-line: hsl(0 0% 100% / .24);
+  --glass-hi: hsl(0 0% 100% / .42);
+  --glass-fg: hsl(0 0% 100%);
+  --glass-sel-top: hsl(0 0% 100% / .72);
+  --glass-sel-bottom: hsl(0 0% 100% / .42);
+  --glass-sel-fg: hsl(250 24% 13%);
+  --glass-shade: hsl(0 0% 0% / .22);
+  --shadow: 0 18px 50px hsl(var(--h) 30% 10% / .22);
+  --font-display: "Gowun Batang", "Noto Serif KR", "AppleMyungjo", "Batang", serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+:root[data-season="advent"]   { --h:270; --ns:22%; --ah:270; --as:42%; }
+:root[data-season="christmas"]{ --h:225; --ns:20%; --ah:40;  --as:62%;
+  --hero-1: hsl(226 48% 12%); --hero-2: hsl(224 40% 23%); --hero-fg: hsl(45 60% 95%); --hero-muted: hsl(44 32% 76%); }
+:root[data-season="epiphany"] { --h:168; --ns:16%; --ah:162; --as:44%;
+  --hero-1: hsl(168 45% 13%); --hero-2: hsl(160 38% 24%); --hero-fg: hsl(48 55% 95%); --hero-muted: hsl(150 18% 78%); }
+:root[data-season="lent"]     { --h:290; --ns:9%;  --ah:292; --as:22%; }
+:root[data-season="holyweek"] { --h:350; --ns:14%; --ah:350; --as:58%; }
+:root[data-season="easter"]   { --h:42;  --ns:16%; --ah:38;  --as:36%;
+  --hero-1: hsl(34 20% 19%); --hero-2: hsl(40 22% 31%); --hero-fg: hsl(45 45% 95%); --hero-muted: hsl(42 16% 76%); }
+:root[data-season="pentecost"]{ --h:12;  --ns:24%; --ah:8;   --as:66%; }
+:root[data-season="ordinary"] { --h:120; --ns:14%; --ah:138; --as:36%; }
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg: hsl(var(--h) var(--ns) 8%);
+    --surface: hsl(var(--h) var(--ns) 11.5%);
+    --sunk: hsl(var(--h) var(--ns) 6.5%);
+    --fg: hsl(var(--h) 18% 92%);
+    --muted: hsl(var(--h) 10% 66%);
+    --line: hsl(var(--h) 14% 21%);
+    --accent: hsl(var(--ah) var(--as) 74%);
+    --accent-ink: hsl(var(--ah) 40% 11%);
+    --accent-soft: hsl(var(--ah) 30% 18%);
+    --warn: hsl(28 85% 66%);
+    --shadow: 0 18px 50px hsl(0 0% 0% / .5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg: hsl(var(--h) var(--ns) 8%);
+  --surface: hsl(var(--h) var(--ns) 11.5%);
+  --sunk: hsl(var(--h) var(--ns) 6.5%);
+  --fg: hsl(var(--h) 18% 92%);
+  --muted: hsl(var(--h) 10% 66%);
+  --line: hsl(var(--h) 14% 21%);
+  --accent: hsl(var(--ah) var(--as) 74%);
+  --accent-ink: hsl(var(--ah) 40% 11%);
+  --accent-soft: hsl(var(--ah) 30% 18%);
+  --warn: hsl(28 85% 66%);
+  --shadow: 0 18px 50px hsl(0 0% 0% / .5);
+  color-scheme: dark;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased;transition:background-color .5s ease}
+h1,h2,h3,p{margin:0}
+button{font:inherit;color:inherit}
+button:disabled{cursor:not-allowed;opacity:.45}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.tnum{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sw{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--sw,#888);box-shadow:0 0 0 1px var(--line);flex:none}
+
+/* ---------- hero band ---------- */
+.hero{background:linear-gradient(140deg,var(--hero-1),var(--hero-2));color:var(--hero-fg);margin-top:calc(-1 * env(safe-area-inset-top, 0px));padding-top:calc(env(safe-area-inset-top, 0px) + 16px);padding-bottom:22px;position:relative;transition:background .6s ease}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:repeating-linear-gradient(90deg,var(--flame) 0 14px,transparent 14px 20px);opacity:.5}
+.hero :focus-visible{outline-color:var(--hero-fg)}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px 16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14.5px;letter-spacing:.06em}
+.brand svg{width:16px;height:16px}
+.top-right{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap}
+.clock{display:flex;align-items:baseline;gap:10px;font-size:13px;color:var(--hero-muted)}
+.clock b{font-weight:500;font-size:16px;color:var(--hero-fg);letter-spacing:.02em}
+.acct-chip{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border-radius:999px;border:1px solid var(--glass-line);background:linear-gradient(180deg,var(--glass-top),var(--glass-bottom));color:var(--glass-fg);font-size:13px;cursor:pointer;box-shadow:inset 0 1px 0 var(--glass-hi)}
+.acct-chip img{width:26px;height:26px;border-radius:50%;display:block;background:var(--glass-bottom)}
+.acct-chip .st{width:8px;height:8px;border-radius:50%;background:var(--dot-off);flex:none}
+.acct-chip .st.on{background:var(--dot-on);box-shadow:0 0 0 3px hsl(145 62% 52% / .25)}
+.hero-main{display:grid;gap:18px;margin-top:24px;align-items:end}
+@media (min-width:760px){.hero-main{grid-template-columns:minmax(0,1fr) auto}}
+.hero-season{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:14px;font-weight:600;letter-spacing:.03em}
+.hero-season .sw{width:10px;height:10px;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--hero-fg) 55%,transparent)}
+.hero-season span{font-weight:400;color:var(--hero-muted)}
+.hero-title{font-family:var(--font-display);font-weight:700;font-size:clamp(27px,4.6vw,44px);line-height:1.22;margin-top:8px;text-wrap:balance;letter-spacing:-.01em}
+.hero-title em{font-style:normal;font-weight:400;color:var(--hero-muted)}
+.hero-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tag{display:inline-flex;align-items:center;gap:7px;font-size:13px;padding:5px 11px;border-radius:999px;background:color-mix(in srgb,var(--hero-fg) 12%,transparent);border:1px solid color-mix(in srgb,var(--hero-fg) 18%,transparent)}
+.tag:empty{display:none}
+.tag .sw{box-shadow:0 0 0 1px color-mix(in srgb,var(--hero-fg) 45%,transparent)}
+
+/* advent wreath */
+.wreath{display:flex;flex-direction:column;align-items:center;gap:6px}
+.candles{display:flex;align-items:flex-end;gap:16px;padding:0 16px;position:relative}
+.candles::before{content:"";position:absolute;left:2px;right:2px;bottom:24px;height:15px;border-radius:999px;z-index:0;
+  background:
+    radial-gradient(circle at 9% 45%,var(--berry) 0 3px,transparent 4px),
+    radial-gradient(circle at 31% 70%,var(--berry) 0 2.5px,transparent 3.5px),
+    radial-gradient(circle at 68% 35%,var(--berry) 0 3px,transparent 4px),
+    radial-gradient(circle at 90% 62%,var(--berry) 0 2.5px,transparent 3.5px),
+    repeating-linear-gradient(115deg,var(--garland) 0 7px,var(--garland-2) 7px 12px)}
+.candle{display:flex;flex-direction:column;align-items:center;position:relative;z-index:1}
+.flame{width:11px;height:18px;margin-bottom:3px;border-radius:50% 50% 50% 50% / 62% 62% 38% 38%;background:radial-gradient(circle at 50% 72%,var(--flame-core) 0 22%,var(--flame) 50%,transparent 74%);opacity:0;transform-origin:50% 100%;transition:opacity .5s}
+.candle.lit .flame{opacity:1;animation:flicker 2.6s ease-in-out infinite;filter:drop-shadow(0 0 7px var(--flame))}
+.candle:nth-child(2) .flame{animation-delay:-.7s}.candle:nth-child(4) .flame{animation-delay:-1.3s}.candle:nth-child(5) .flame{animation-delay:-1.9s}
+.wax{width:15px;height:54px;border-radius:4px 4px 2px 2px;background:linear-gradient(90deg,hsl(0 0% 100% / .22),transparent 45%,hsl(0 0% 0% / .2)),var(--wax)}
+.candle.center .wax{height:72px;width:18px}
+.candle em{font-style:normal;font-size:11px;color:var(--hero-muted);margin-top:28px;letter-spacing:.04em;white-space:nowrap}
+.candle.lit em{color:var(--hero-fg)}
+.wreath-note{font-size:12px;color:var(--hero-muted);text-align:center;max-width:300px}
+@keyframes flicker{0%,100%{transform:scale(1,1) rotate(-1deg)}30%{transform:scale(.94,1.08) rotate(1.5deg)}60%{transform:scale(1.04,.95) rotate(-.5deg)}}
+
+/* church-year strip */
+.yearband{margin-top:22px}
+.yb-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--hero-muted);margin-bottom:9px}
+.yb-head b{color:var(--hero-fg);font-weight:600}
+.yb-track{position:relative;padding:3px 0}
+.yb-bar{display:flex;gap:3px;height:8px}
+.yb-seg{height:100%;border-radius:4px;min-width:4px;box-shadow:inset 0 1px 0 hsl(0 0% 100% / .25)}
+.yb-mark{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--hero-fg);transform:translate(-50%,-50%);box-shadow:0 0 0 3px color-mix(in srgb,var(--hero-1) 75%,transparent),0 2px 8px hsl(0 0% 0% / .35)}
+.yb-labels{position:relative;height:16px;margin-top:7px;font-size:11px;color:var(--hero-muted)}
+.yb-labels span{position:absolute;top:0;white-space:nowrap}
+
+/* glass color picker */
+.theme-row{margin-top:18px;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 16px;border-radius:20px;min-width:0;
+  background:linear-gradient(180deg,var(--glass-top),var(--glass-bottom));border:1px solid var(--glass-line);
+  box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 -1px 0 hsl(0 0% 0% / .1),0 10px 28px var(--glass-shade);
+  -webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%)}
+.theme-label{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--glass-fg);opacity:.9;flex:none;text-shadow:0 1px 2px hsl(0 0% 0% / .3)}
+.theme-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:4px 2px 6px;min-width:0}
+.theme-chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:inline-flex;align-items:center;gap:8px;padding:7px 14px 7px 8px;border-radius:999px;border:1px solid var(--glass-line);
+  background:linear-gradient(180deg,hsl(0 0% 100% / .22),hsl(0 0% 100% / .05));color:var(--glass-fg);font-size:13px;cursor:pointer;white-space:nowrap;
+  box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 -1px 0 hsl(0 0% 0% / .14),0 3px 8px hsl(0 0% 0% / .2);text-shadow:0 1px 1px hsl(0 0% 0% / .3);
+  transition:transform .15s ease,box-shadow .15s ease}
+.chip:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 -1px 0 hsl(0 0% 0% / .14),0 6px 14px hsl(0 0% 0% / .26)}
+.chip[aria-pressed="true"]{background:linear-gradient(180deg,var(--glass-sel-top),var(--glass-sel-bottom));color:var(--glass-sel-fg);text-shadow:none;border-color:hsl(0 0% 100% / .75);
+  box-shadow:inset 0 1px 0 hsl(0 0% 100% / .95),inset 0 -2px 4px hsl(0 0% 0% / .08),0 6px 16px hsl(0 0% 0% / .3)}
+.chip:focus-visible{outline:2px solid var(--glass-fg);outline-offset:2px}
+.bead{width:16px;height:16px;border-radius:50%;background:var(--sw);flex:none;
+  box-shadow:inset 0 -3px 4px hsl(0 0% 0% / .28),inset 0 2px 2px hsl(0 0% 100% / .55),0 0 0 1px hsl(0 0% 100% / .55),0 1px 2px hsl(0 0% 0% / .3)}
+.chip small{font-size:11px;opacity:.72}
+
+/* ---------- main ---------- */
+.mini-head{display:flex;align-items:center;gap:8px;padding-block:14px 2px;font-size:13px;color:var(--muted);min-width:0}
+.mini-head b{color:var(--fg);font-weight:600;letter-spacing:.04em}
+.mini-head span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (min-width:760px){.mobile-only{display:none!important}}
+.main{display:grid;gap:28px;padding-block:24px 40px}
+@media (min-width:980px){.main{grid-template-columns:minmax(0,1.65fr) minmax(320px,1fr);align-items:start}}
+.col-main,.col-side{display:grid;gap:20px;min-width:0;align-content:start}
+.datebar{display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap}
+.datebar h2{font-family:var(--font-display);font-size:21px;font-weight:700;margin-right:auto;min-width:0}
+.date-ctrl{display:flex;align-items:center;gap:6px;min-width:0}
+.date-ctrl input{max-width:170px}
+.unlock{flex-basis:100%;font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.unlock svg{width:13px;height:13px;flex:none}
+.icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;display:inline-grid;place-items:center;font-size:18px;line-height:1;flex:none}
+.icon-btn:hover:not(:disabled){border-color:var(--accent)}
+input,select,textarea{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{font:500 14px/1.2 var(--font-body);padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;transition:border-color .2s,background .2s}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover:not(:disabled){filter:brightness(1.07)}
+.btn-sm{padding:7px 10px;font-size:13px;border-radius:8px}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--fg)}
+
+.paper{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:clamp(20px,4vw,38px)}
+.eyebrow{font-size:12.5px;font-weight:600;letter-spacing:.08em;color:var(--accent)}
+.r-title{font-family:var(--font-display);font-weight:700;font-size:clamp(26px,3.6vw,34px);line-height:1.3;margin-top:8px;text-wrap:balance}
+.r-ref{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-top:8px}
+.r-ref strong{font-size:16px;font-weight:600}
+.r-ref span{font-size:13px;color:var(--muted)}
+.keyverse{margin:22px 0 20px;padding:20px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);position:relative}
+.keyverse::before{content:"오늘의 한 구절";position:absolute;top:-10px;left:0;font-size:11.5px;letter-spacing:.08em;color:var(--muted);background:var(--surface);padding-right:10px}
+.keyverse blockquote{margin:0;font-family:var(--font-display);font-size:clamp(19px,2.3vw,22px);line-height:1.85;max-width:38em;text-wrap:pretty}
+.keyverse figcaption{margin-top:10px;font-size:13px;color:var(--muted);text-align:right}
+.read-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.read-row .muted{font-size:12.5px}
+.steps{list-style:none;margin:26px 0 0;padding:0;display:grid;gap:16px;max-width:42em}
+.steps li{display:grid;grid-template-columns:52px minmax(0,1fr);gap:12px;align-items:baseline}
+.step-k{font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--accent);padding:2px 0;border-bottom:1.5px solid var(--accent);justify-self:start}
+.steps p{font-size:15.5px}
+.steps li.q p{font-weight:500}
+.steps li.pr p{font-family:var(--font-display);font-size:16.5px}
+.r-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-top:26px;padding-top:18px;border-top:1px dashed var(--line)}
+.r-foot .muted{font-size:12.5px;max-width:34em}
+
+.memo h3,.panel h3,.cal-card h3{font-family:var(--font-display);font-size:19px;font-weight:700;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.memo h3 small,.panel h3 small{font-family:var(--font-body);font-size:13px;font-weight:400;color:var(--muted)}
+.memo-prompt{margin-top:8px;font-size:13.5px;color:var(--muted)}
+.inserts{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.memo textarea{display:block;width:100%;min-height:190px;margin-top:10px;resize:vertical;line-height:1.75;padding:14px 15px;background:var(--sunk);border-radius:12px}
+.memo textarea[readonly]{opacity:.7}
+.memo-foot{display:flex;align-items:center;justify-content:space-between;gap:8px 14px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.memo-foot .state{display:flex;gap:6px 12px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--fg);font-size:12px}
+.pill.warn{background:transparent;border:1px solid var(--warn);color:var(--warn)}
+
+/* calendar card */
+.cal-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 14px 16px;display:grid;gap:12px;min-width:0}
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px}
+.cal-mon{display:flex;align-items:baseline;gap:8px}
+.cal-mon b{font-family:var(--font-display);font-size:26px;font-weight:700;line-height:1}
+.cal-mon span{font-size:13px;color:var(--muted)}
+.cal-mon small{font-size:12px;color:var(--muted);margin-left:4px}
+.cal-nav{display:flex;gap:6px}
+.cal-nav .icon-btn{width:34px;height:34px;font-size:15px;border-radius:50%}
+.cal-wd,.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.cal-wd span{font-size:11px;color:var(--muted);text-align:center;padding-bottom:2px;letter-spacing:.04em}
+.cal-wd span:first-child{color:var(--accent);font-weight:600}
+.cal-grid{row-gap:4px}
+.cd{position:relative;height:52px;border:0;background:transparent;padding:0 0 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--fg);min-width:0}
+.cd-n{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:500 13.5px/1 var(--font-body);transition:background .15s, box-shadow .15s}
+.cd:hover .cd-n{background:var(--sunk)}
+.cd.sun .cd-n{color:var(--accent)}
+.cd.done .cd-n{background:var(--accent-soft)}
+.cd.today .cd-n{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.cd.sel .cd-n{background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 12px color-mix(in srgb,var(--accent) 38%,transparent)}
+.cd-mk{width:5px;height:5px;border-radius:50%;background:transparent;position:absolute;bottom:11px}
+.cd.memo .cd-mk{background:var(--accent)}
+.cd.sel.memo .cd-mk{background:var(--accent)}
+.cd-rib{position:absolute;left:0;right:0;bottom:2px;height:4px;background:var(--sw);box-shadow:inset 0 0 0 .5px color-mix(in srgb,var(--fg) 14%,transparent)}
+.cd.rs .cd-rib{left:5px;border-top-left-radius:3px;border-bottom-left-radius:3px}
+.cd.re .cd-rib{right:5px;border-top-right-radius:3px;border-bottom-right-radius:3px}
+.cd-rv{position:absolute;top:3px;right:calc(50% - 21px);width:7px;height:7px;border-radius:50%;background:var(--warn);box-shadow:0 0 0 2px var(--surface)}
+.cd.out .cd-n{opacity:.32}
+.cd.out .cd-rib{opacity:.35}
+.cd.future{cursor:default}
+.cd.future .cd-n{color:var(--muted);opacity:.5}
+.cd.future:hover .cd-n{background:transparent}
+.cal-seasons{display:flex;flex-wrap:wrap;gap:6px;padding:10px 4px 0;border-top:1px solid var(--line)}
+.cal-seasons span{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 10px 3px 7px;border-radius:999px;background:var(--sunk)}
+.cal-seasons em{font-style:normal;color:var(--muted)}
+.cal-legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--muted);padding:0 4px}
+.cal-legend i{display:inline-block;margin-right:5px;vertical-align:-1px}
+.lg-memo{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.lg-done{width:12px;height:12px;border-radius:50%;background:var(--accent-soft)}
+.lg-rv{width:7px;height:7px;border-radius:50%;background:var(--warn)}
+.lg-today{width:12px;height:12px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--accent)}
+
+/* side rail panels */
+.panel{padding:18px 0 4px;border-top:1px solid var(--line);display:grid;gap:12px;min-width:0}
+.search{width:100%}
+.memo-list{display:grid;gap:2px;max-height:420px;overflow:auto;margin:0;padding:0;list-style:none}
+.memo-item{display:grid;gap:3px;text-align:left;width:100%;padding:10px;border:0;border-radius:10px;background:transparent;cursor:pointer}
+.memo-item:hover{background:var(--sunk)}
+.memo-item.cur{background:var(--accent-soft)}
+.mi-top{display:flex;align-items:center;gap:8px;font-size:13px}
+.mi-top b{font-weight:600}
+.mi-top .sw{width:9px;height:9px}
+.mi-title{font-size:12.5px;color:var(--muted)}
+.mi-prev{font-size:13.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:keep-all;overflow-wrap:anywhere}
+.mi-done{margin-left:auto;font-size:11.5px;color:var(--accent);font-weight:600}
+.empty{font-size:13.5px;color:var(--muted);padding:14px;border:1px dashed var(--line);border-radius:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row > *{min-width:0}
+.grow{flex:1 1 140px}
+.field{display:grid;gap:4px;font-size:12.5px;color:var(--muted)}
+.field input,.field select{color:var(--fg);font-size:14px}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.form-grid .full{grid-column:1 / -1}
+.resv-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.resv{display:grid;gap:4px;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.resv-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.resv-when{font-weight:600;font-size:14px}
+.resv-rel{font-size:12px;color:var(--warn);font-weight:500}
+.resv-label{font-size:14px}
+.resv-read{font-size:12.5px;color:var(--muted)}
+.resv-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.resv.past{opacity:.6}
+details summary{cursor:pointer;font-size:13px;color:var(--muted)}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14.5px}
+.switch input{appearance:none;-webkit-appearance:none;width:44px;height:26px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;transition:background .2s;flex:none;border:0;padding:0;margin:0}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px hsl(0 0% 0% / .3);transition:transform .2s}
+.switch input:checked{background:var(--accent)}
+.switch input:checked::after{transform:translateX(18px)}
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.days button{padding:7px 0;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:13px}
+.days button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.next-alarm{font-size:13.5px;padding:10px 12px;border-radius:10px;background:var(--sunk)}
+.note{font-size:12.5px;color:var(--muted)}
+.acct-card{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--sunk)}
+.acct-card img{width:44px;height:44px;border-radius:50%;flex:none;background:var(--line)}
+.acct-card div{display:grid;gap:2px;min-width:0}
+.acct-card b{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-status{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.acct-status i{width:8px;height:8px;border-radius:50%;background:var(--dot-off)}
+.acct-status i.on{background:var(--dot-on)}
+.migrate{display:grid;gap:8px;padding:12px;border-radius:12px;border:1px dashed var(--accent)}
+.migrate p{font-size:13.5px}
+.login-help{display:grid;gap:8px;padding:12px;border-radius:12px;border:1px dashed var(--warn);font-size:13px}
+.foot{padding-block:8px 36px;font-size:12.5px;color:var(--muted);display:grid;gap:6px}
+
+/* overlays */
+.alarm-banner{position:fixed;z-index:60;top:calc(env(safe-area-inset-top, 0px) + 12px);left:50%;transform:translateX(-50%);width:min(540px,calc(100% - 24px));background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:16px 18px;display:grid;gap:8px}
+.alarm-banner .ab-k{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent)}
+.alarm-banner .ab-t{font-family:var(--font-display);font-size:19px;font-weight:700}
+.alarm-banner .ab-b{font-size:14px;color:var(--muted)}
+.toast{position:fixed;z-index:70;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom, 0px) + 18px);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:13.5px;box-shadow:var(--shadow);max-width:calc(100% - 32px);text-align:center}
+.copybox{width:100%;min-height:120px;font-size:12.5px}
+
+/* phone: tabs */
+.tabbar{display:none}
+@media (max-width:759px){
+  body{padding-bottom:calc(78px + env(safe-area-inset-bottom, 0px))}
+  .main{padding-block:14px 24px;gap:16px}
+  .col-main,.col-side{gap:14px}
+  .hero{padding-bottom:18px}
+  .hero-main{margin-top:18px}
+  .candles{gap:12px;padding:0 10px}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .cal-card{padding:16px 10px 14px}
+  .cd{height:48px}
+  .form-grid{grid-template-columns:minmax(0,1fr)}
+  .steps li{grid-template-columns:minmax(0,1fr);gap:4px}
+  .theme-row{padding:6px 6px 6px 12px;border-radius:18px}
+  .yb-labels{display:none}
+  .toast{bottom:calc(env(safe-area-inset-bottom, 0px) + 92px)}
+  .tabbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;position:fixed;left:0;right:0;bottom:0;z-index:50;
+    background:color-mix(in srgb,var(--surface) 86%,transparent);-webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%);
+    border-top:1px solid var(--line);
+    padding:6px max(10px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px))}
+  .tabbar button{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:transparent;color:var(--muted);font-size:11.5px;font-weight:500;padding:7px 0 5px;border-radius:14px;cursor:pointer}
+  .tabbar svg{width:22px;height:22px}
+  .tabbar button[aria-current="page"]{color:var(--accent);background:var(--accent-soft)}
+}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important}
+  .candle.lit .flame{animation:none}
+}
+</style>
+</head>
+<body>
+
+
+<header class="hero" data-pane="read">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7 1h2v4h4v2H9v8H7V7H3V5h4z" fill="currentColor"/></svg>
+        성경묵상노트
+      </div>
+      <div class="top-right">
+        <div class="clock" aria-live="off"><span id="clockDate"></span><b id="clockTime" class="tnum"></b></div>
+        <button class="acct-chip" id="acctChip" type="button"><img id="acctChipImg" alt=""><span class="st" id="acctChipDot"></span><span id="acctChipName">계정 확인 중</span></button>
+      </div>
+    </div>
+
+    <div class="hero-main">
+      <div>
+        <p class="hero-season"><i class="sw" id="hSwatch"></i><strong id="hSeason"></strong><span id="hSeasonSub"></span></p>
+        <h1 class="hero-title" id="hTitle">성경묵상노트</h1>
+        <div class="hero-tags">
+          <span class="tag" id="hColor"></span>
+          <span class="tag" id="hCount"></span>
+          <span class="tag" id="hTheme"></span>
+        </div>
+      </div>
+      <div class="wreath" id="wreath" role="img">
+        <div class="candles">
+          <div class="candle" data-n="1" style="--wax:var(--wax-purple)"><span class="flame"></span><span class="wax"></span><em>소망</em></div>
+          <div class="candle" data-n="2" style="--wax:var(--wax-purple)"><span class="flame"></span><span class="wax"></span><em>평화</em></div>
+          <div class="candle center" data-n="5" style="--wax:var(--wax-white)"><span class="flame"></span><span class="wax"></span><em>그리스도</em></div>
+          <div class="candle" data-n="3" style="--wax:var(--wax-pink)"><span class="flame"></span><span class="wax"></span><em>기쁨</em></div>
+          <div class="candle" data-n="4" style="--wax:var(--wax-purple)"><span class="flame"></span><span class="wax"></span><em>사랑</em></div>
+        </div>
+        <p class="wreath-note" id="wreathNote"></p>
+      </div>
+    </div>
+
+    <div class="yearband">
+      <div class="yb-head"><span id="ybLabel"></span><span id="ybNote"></span></div>
+      <div class="yb-track">
+        <div class="yb-bar" id="ybBar" role="img"></div>
+        <div class="yb-mark" id="ybMark"></div>
+      </div>
+      <div class="yb-labels" id="ybLabels" aria-hidden="true"></div>
+    </div>
+
+    <div class="theme-row">
+      <span class="theme-label" id="themeLabel">화면 색</span>
+      <div class="theme-chips" id="themeChips" role="group" aria-labelledby="themeLabel"></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap mini-head mobile-only" data-pane="note cal set"><i class="sw" id="mhSw"></i><b>성경묵상노트</b><span id="mhText"></span></div>
+
+<main class="wrap main">
+  <div class="col-main">
+    <nav class="datebar" aria-label="날짜 이동" data-pane="read note">
+      <h2 id="selLabel"></h2>
+      <div class="date-ctrl">
+        <button class="icon-btn" id="prevDay" aria-label="전날 보기">‹</button>
+        <input type="date" id="datePick" aria-label="날짜 선택">
+        <button class="icon-btn" id="nextDay" aria-label="다음 날 보기">›</button>
+        <button class="btn btn-sm" id="todayBtn">오늘</button>
+      </div>
+      <p class="unlock" id="unlockNote"></p>
+    </nav>
+
+    <article class="paper reading" aria-labelledby="rTitle" data-pane="read">
+      <p class="eyebrow" id="rEyebrow"></p>
+      <h2 class="r-title" id="rTitle"></h2>
+      <p class="r-ref"><strong id="rRef"></strong><span id="rMeta" class="tnum"></span></p>
+      <figure class="keyverse">
+        <blockquote id="rKey"></blockquote>
+        <figcaption id="rCite"></figcaption>
+      </figure>
+      <div class="read-row">
+        <a class="btn btn-primary" id="rLink" target="_blank" rel="noopener">본문 전체 읽기 · 개역개정 ↗</a>
+        <span class="muted">대한성서공회 성경 읽기 페이지가 새 창으로 열립니다</span>
+      </div>
+      <ol class="steps">
+        <li><span class="step-k">읽기</span><p>본문을 천천히 두 번 읽습니다. 처음에는 이야기의 흐름을, 두 번째는 마음에 머무는 단어 하나를 찾습니다.</p></li>
+        <li><span class="step-k">묵상</span><p id="rMed"></p></li>
+        <li class="q"><span class="step-k">적용</span><p id="rQ"></p></li>
+        <li class="pr"><span class="step-k">기도</span><p id="rPray"></p></li>
+      </ol>
+      <div class="r-foot">
+        <button class="btn" id="doneBtn" aria-pressed="false">오늘 묵상 마침</button>
+        <span class="muted">하루 분량은 본문 한 단락(5~14절)입니다. 두 번 읽고, 한 구절을 붙잡고, 질문 하나에 답하고, 한 줄로 기도하면 약 10분이면 충분합니다.</span>
+      </div>
+    </article>
+
+    <section class="paper memo" aria-labelledby="memoHead" data-pane="note">
+      <h3 id="memoHead">묵상 노트 <small id="memoDate"></small></h3>
+      <p class="memo-prompt" id="memoPrompt"></p>
+      <div class="inserts" aria-label="빠른 입력">
+        <button class="btn btn-sm" data-insert="마음에 남은 단어: ">마음에 남은 단어</button>
+        <button class="btn btn-sm" data-insert="오늘의 적용: ">오늘의 적용</button>
+        <button class="btn btn-sm" data-insert="감사 한 줄: ">감사 한 줄</button>
+        <button class="btn btn-sm" data-insert="기도 제목: ">기도 제목</button>
+      </div>
+      <label class="sr" for="memo">묵상 노트</label>
+      <textarea id="memo" spellcheck="false" readonly></textarea>
+      <div class="memo-foot">
+        <div class="state"><span id="saveState">계정을 확인하는 중</span><span class="pill" id="storeMode">계정 확인 중</span></div>
+        <button class="btn btn-sm" id="memoLogin" hidden>Google 계정으로 로그인</button><button class="btn btn-sm btn-primary" id="memoSave" disabled>저장</button>
+      </div>
+    </section>
+  </div>
+
+  <aside class="col-side" aria-label="달력과 설정">
+    <section class="cal-card" aria-labelledby="calHead" data-pane="cal">
+      <div class="cal-head">
+        <h3 id="calHead" class="cal-mon"><b id="calMonthBig" class="tnum"></b><span id="calYear" class="tnum"></span><small>묵상 달력</small></h3>
+        <div class="cal-nav">
+          <button class="icon-btn" id="calPrev" aria-label="이전 달">‹</button>
+          <button class="icon-btn" id="calNext" aria-label="다음 달">›</button>
+        </div>
+      </div>
+      <div class="cal-wd" id="calWd" aria-hidden="true"></div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-seasons" id="calSeasons" aria-label="이 달의 절기"></div>
+      <div class="cal-legend">
+        <span><i class="lg-today"></i>오늘</span><span><i class="lg-done"></i>묵상 마침</span><span><i class="lg-memo"></i>메모</span><span><i class="lg-rv"></i>예약</span><span>아래 색 띠는 절기 색</span>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="arcHead" data-pane="note cal">
+      <h3 id="arcHead">메모 보관함 <small id="arcCount"></small></h3>
+      <input type="search" class="search" id="arcSearch" placeholder="메모·본문 검색" aria-label="메모 검색">
+      <ul class="memo-list" id="arcList"></ul>
+      <div class="row">
+        <button class="btn btn-sm" id="exportTxt">텍스트 파일로 저장</button>
+        <button class="btn btn-sm" id="copyAll">전체 복사</button>
+      </div>
+      <textarea class="copybox" id="copyBox" readonly hidden aria-label="복사할 메모 전체"></textarea>
+    </section>
+
+    <section class="panel" id="acctPanel" aria-labelledby="acHead" data-pane="set">
+      <h3 id="acHead">내 계정</h3>
+      <div class="acct-card"><img id="acctImg" alt=""><div><b id="acctName">계정 확인 중</b><span class="acct-status"><i id="acctDot"></i><span id="acctStatus"></span></span></div></div>
+      <p class="note" id="acctNote"></p>
+      <div class="row"><button class="btn btn-primary" id="loginBtn" hidden>Google 계정으로 로그인</button><button class="btn btn-sm" id="logoutBtn" hidden>로그아웃</button></div>
+      <div class="login-help" id="inAppHelp" hidden><span id="inAppText"></span><a class="btn btn-sm" id="kakaoOpen" hidden>다른 브라우저로 열기</a></div>
+      </section>
+
+    <section class="panel" aria-labelledby="rvHead" data-pane="set">
+      <h3 id="rvHead">묵상 예약 <small>시간을 정해 두면 그때 알려 드립니다</small></h3>
+      <form id="rvForm" class="form-grid" autocomplete="off">
+        <label class="field">날짜<input type="date" id="rvDate" required></label>
+        <label class="field">시간<input type="time" id="rvTime" value="06:30" required></label>
+        <label class="field full">내용<input type="text" id="rvLabel" maxlength="60" placeholder="예: 대림절 첫째 주일 가족 묵상"></label>
+        <label class="field">반복<select id="rvRepeat"><option value="once">한 번</option><option value="weekly">매주 같은 요일</option></select></label>
+        <div class="field" style="align-self:end"><button class="btn btn-primary" type="submit">예약 추가</button></div>
+      </form>
+      <ul class="resv-list" id="rvList"></ul>
+      <details id="rvPastWrap" hidden><summary id="rvPastSum"></summary><ul class="resv-list" id="rvPast" style="margin-top:8px"></ul></details>
+    </section>
+
+    <section class="panel" aria-labelledby="alHead" data-pane="set">
+      <h3 id="alHead">알림 설정</h3>
+      <label class="switch">매일 묵상 알림<input type="checkbox" id="alOn"></label>
+      <div class="row">
+        <label class="field grow">알림 시간<input type="time" id="alTime" value="06:30"></label>
+      </div>
+      <div class="days" id="alDays" role="group" aria-label="알림 요일"></div>
+      <p class="next-alarm" id="alNext"></p>
+      <div class="row">
+        <button class="btn btn-sm" id="alTest">알림 소리 듣기</button>
+        <button class="btn btn-sm" id="alPerm">브라우저 알림 허용</button>
+        <a class="btn btn-sm" id="alGcal" target="_blank" rel="noopener">구글 캘린더에 매일 일정 추가 ↗</a>
+      </div>
+      <label class="switch">알림을 기다리는 동안 화면 켜두기<input type="checkbox" id="alWake"></label>
+      <p class="note">이 화면이 열려 있으면 정한 시간에 종소리와 화면 알림으로 알려 드립니다. 화면을 닫은 뒤에도 휴대폰으로 알림을 받으려면 구글 캘린더에 반복 일정을 추가해 두세요.</p>
+    </section>
+  </aside>
+</main>
+
+<footer class="wrap foot" data-pane="read set">
+  <span>성경 본문: 개역개정(대한성서공회). 오늘의 한 구절은 개역개정에서 인용했고, 본문 전체는 대한성서공회 사이트에서 읽도록 연결했습니다.</span>
+  <span>메모와 설정은 로그인한 Google 계정에 저장되며 본인만 볼 수 있습니다. 휴대폰 브라우저 메뉴의 "홈 화면에 추가"로 앱처럼 쓸 수 있습니다.</span>
+  <span>교회력은 대림절 첫째 주일에 새해가 시작되며, 부활절 날짜에 따라 해마다 자동으로 계산됩니다. 추수감사주일은 11월 셋째 주일입니다.</span>
+</footer>
+
+<nav class="tabbar" id="tabbar" aria-label="화면 전환">
+  <button type="button" data-view="read"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5Z"/><path d="M12 6.5v13"/></svg>말씀</button>
+  <button type="button" data-view="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg>노트</button>
+  <button type="button" data-view="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>달력</button>
+  <button type="button" data-view="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 10a6 6 0 0 1 12 0c0 5 2 6.5 2 6.5H4S6 15 6 10Z"/><path d="M10 19.5a2 2 0 0 0 4 0"/></svg>예약·알림</button>
+</nav>
+
+<div class="alarm-banner" id="alarmBanner" role="alertdialog" aria-labelledby="abT" hidden>
+  <span class="ab-k" id="abK">묵상 알림</span>
+  <p class="ab-t" id="abT"></p>
+  <p class="ab-b" id="abB"></p>
+  <div class="row"><button class="btn btn-primary btn-sm" id="abGo">지금 묵상하기</button><button class="btn btn-sm" id="abClose">닫기</button></div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script type="module">
+
+/* ===================== 묵상 본문 =====================
+   [본문, 제목, 핵심 구절 절, 핵심 구절(개역개정), 묵상, 적용 질문, 기도] */
+const PREP = [
+["마태복음 25:31-40","지극히 작은 자 하나에게","40","임금이 대답하여 이르시되 내가 진실로 너희에게 이르노니 너희가 여기 내 형제 중에 지극히 작은 자 하나에게 한 것이 곧 내게 한 것이니라 하시고","교회력의 마지막 주일, 왕이신 예수님은 높은 보좌가 아니라 배고프고 외로운 사람 곁에서 우리를 기다리십니다. 오늘 내가 건네는 작은 친절이 곧 주님께 드리는 예배가 됩니다.","오늘 내 곁의 '지극히 작은 자'는 누구인가요? 그에게 건넬 수 있는 작은 친절 하나를 적어 보세요.","작은 사람 안에 계신 주님을 알아보는 눈을 주옵소서."],
+["마태복음 25:1-13","기름을 준비한 사람들","13","그런즉 깨어 있으라 너희는 그 날과 그 때를 알지 못하느니라","슬기로운 처녀들이 특별했던 점은 단 하나, 기름을 미리 준비했다는 것입니다. 믿음의 기름은 하루아침에 채워지지 않고 날마다의 말씀과 기도로 조금씩 채워집니다.","내 마음의 등잔에 기름을 채우는 습관은 무엇인가요? 대림절을 앞두고 하나만 정해 보세요.","날마다 조금씩 준비하는 성실함을 주옵소서."],
+["누가복음 12:35-40","허리에 띠를 띠고","35","허리에 띠를 띠고 등불을 켜고 서 있으라","주인을 기다리는 종은 언제든 문을 열 수 있게 준비합니다. 기다림은 멈춰 서 있는 시간이 아니라 깨어서 살아가는 시간입니다.","주님이 오늘 저녁 내 집 문을 두드리신다면 가장 먼저 정리하고 싶은 것은 무엇인가요?","오늘 하루를 깨어 있는 마음으로 살게 하옵소서."],
+["로마서 13:11-14","빛의 갑옷을 입자","12","밤이 깊고 낮이 가까웠으니 그러므로 우리가 어둠의 일을 벗고 빛의 갑옷을 입자","옷을 갈아입듯 오래된 습관을 벗고 새 마음을 입으라는 초대입니다. 낮이 가까웠다는 말씀은 지금이 바로 바꿀 때라는 뜻이기도 합니다.","내가 벗어야 할 '어둠의 일' 하나와 새로 입고 싶은 '빛의 옷' 하나는 무엇인가요?","어둠의 습관을 벗고 빛의 옷을 입을 용기를 주옵소서."],
+["시편 90:10-17","우리 날 계수함을 가르치사","12","우리에게 우리 날 계수함을 가르치사 지혜로운 마음을 얻게 하소서","한 해의 끝자락에서 남은 날을 세어 보는 것은 조급해지려는 것이 아니라 지혜로워지려는 것입니다. 시간이 하나님의 선물임을 알 때 하루가 달라집니다.","올 한 해 하나님께 감사한 일 세 가지를 떠올려 적어 보세요.","주신 하루를 귀히 여기는 지혜로운 마음을 주옵소서."],
+["데살로니가전서 5:1-11","서로 덕을 세우라","11","그러므로 피차 권면하고 서로 덕을 세우기를 너희가 하는 것 같이 하라","주님을 기다리는 사람들은 혼자 버티지 않고 서로를 일으켜 세웁니다. 따뜻한 한마디가 누군가에게는 오늘을 견딜 힘이 됩니다.","이번 주에 격려의 말을 건네고 싶은 사람은 누구인가요? 보낼 문장을 미리 적어 보세요.","서로 세워 주는 말을 하는 사람이 되게 하옵소서."],
+["이사야 40:1-5","주의 길을 예비하라","3","외치는 자의 소리여 이르되 너희는 광야에서 여호와의 길을 예비하라 사막에서 우리 하나님의 대로를 평탄하게 하라","내일부터 대림절이 시작됩니다. 주님이 오실 길을 닦는다는 것은 내 마음의 울퉁불퉁한 곳, 막힌 곳을 정직하게 들여다보는 일입니다.","주님을 맞이하기 위해 내 마음에서 평탄하게 고르고 싶은 곳은 어디인가요?","대림절을 앞두고 제 마음에 주님의 길을 내게 하옵소서."]
+];
+const ADVENT = [
+["이사야 2:1-5","여호와의 빛에 행하자","5","야곱 족속아 오라 우리가 여호와의 빛에 행하자","대림절 첫 촛불은 '소망'입니다. 칼을 쳐서 보습을 만드는 날에 대한 약속은 먼 미래의 이야기만이 아니라 오늘 빛 가운데 내딛는 한 걸음에서 시작됩니다.","대림절 4주 동안 매일 지키고 싶은 작은 약속 하나를 정해 보세요.","소망의 빛 가운데 걸어가는 대림절이 되게 하옵소서."],
+["예레미야 29:10-14","미래와 희망을 주시는 생각","11","여호와의 말씀이니라 너희를 향한 나의 생각을 내가 아나니 평안이요 재앙이 아니니라 너희에게 미래와 희망을 주는 것이니라","이 말씀은 포로로 끌려간 사람들에게, 가장 막막한 자리에서 주어졌습니다. 상황이 바뀌기 전에 먼저 하나님의 생각을 믿는 것이 소망입니다.","지금 내가 막막하게 느끼는 일은 무엇인가요? 그 일 위에 이 말씀을 적어 보세요.","저를 향한 주님의 선한 생각을 믿게 하옵소서."],
+["시편 25:1-7","종일 주를 기다리나이다","5","주의 진리로 나를 지도하시고 교훈하소서 주는 내 구원의 하나님이시니 내가 종일 주를 기다리나이다","기다림은 막연히 시간을 보내는 것이 아니라 '가르쳐 주세요'라고 묻는 마음입니다. 오늘 하루 중간중간 짧게 주님께 길을 여쭈어 보세요.","오늘 주님께 길을 묻고 싶은 결정이나 고민은 무엇인가요?","주의 길을 가르쳐 주시고 오늘도 주를 기다리게 하옵소서."],
+["로마서 15:4-13","소망의 하나님","13","소망의 하나님이 모든 기쁨과 평강을 믿음 안에서 너희에게 충만하게 하사 성령의 능력으로 소망이 넘치게 하시기를 원하노라","소망은 내가 쥐어짜 내는 감정이 아니라 하나님이 채워 주시는 선물입니다. 바울은 서로 받아 주는 공동체 안에서 그 소망이 넘친다고 말합니다.","그리스도께서 나를 받아 주신 것처럼, 내가 먼저 받아 주어야 할 사람은 누구인가요?","소망의 하나님, 제 안에 기쁨과 평강을 채워 주옵소서."],
+["이사야 40:27-31","새 힘을 얻으리니","31","오직 여호와를 앙망하는 자는 새 힘을 얻으리니 독수리가 날개치며 올라감 같을 것이요 달음박질하여도 곤비하지 아니하겠고 걸어가도 피곤하지 아니하리로다","한 해의 끝은 몸도 마음도 지치기 쉬운 때입니다. 하나님은 피곤한 사람을 꾸짖지 않으시고 새 힘을 약속하십니다.","요즘 나를 가장 지치게 하는 일은 무엇인가요? 그 일을 주님께 맡기는 기도를 한 줄로 적어 보세요.","지친 저에게 독수리 같은 새 힘을 주옵소서."],
+["예레미야애가 3:19-26","아침마다 새로우니","22-23","여호와의 인자와 긍휼이 무궁하시므로 우리가 진멸되지 아니함이니이다 이것들이 아침마다 새로우니 주의 성실하심이 크시도소이다","무너진 예루살렘에서 부른 노래입니다. 어제의 실패가 오늘을 결정하지 않습니다. 하나님의 긍휼은 매일 아침 새로 주어집니다.","어제의 일 가운데 내려놓고 새로 시작하고 싶은 것은 무엇인가요?","아침마다 새로운 주의 긍휼로 오늘을 시작하게 하옵소서."],
+["시편 130:1-8","파수꾼이 아침을 기다림보다","6","파수꾼이 아침을 기다림보다 내 영혼이 주를 더 기다리나니 참으로 파수꾼이 아침을 기다림보다 더하도다","밤을 지키는 파수꾼은 아침이 반드시 온다는 것을 압니다. 대림절의 기다림도 그렇습니다. 아직 어둡지만 주님은 반드시 오십니다.","내가 간절히 '아침'을 기다리는 삶의 영역은 어디인가요?","어두운 밤에도 아침을 믿고 주님을 기다리게 하옵소서."],
+["이사야 11:1-9","이리가 어린 양과 함께","6","그 때에 이리가 어린 양과 함께 살며 표범이 어린 염소와 함께 누우며 송아지와 어린 사자와 살진 짐승이 함께 있어 어린 아이에게 끌리며","대림절 둘째 촛불은 '평화'입니다. 서로 해치던 것들이 함께 눕는 그림은 메시아가 가져오실 평화가 얼마나 깊은지 보여 줍니다.","나와 서먹하거나 자주 부딪히는 관계 하나를 떠올려 보세요. 평화를 위해 내가 할 수 있는 첫걸음은 무엇일까요?","평화의 왕이신 주님, 제 관계 속에 주의 평화를 심어 주옵소서."],
+["마가복음 1:1-8","주의 길을 준비하라","3","광야에 외치는 자의 소리가 있어 이르되 너희는 주의 길을 준비하라 그의 오실 길을 곧게 하라 기록된 것과 같이","세례 요한은 사람들을 광야로 불러 마음을 돌이키게 했습니다. 평화는 바깥 상황보다 먼저 돌이킨 마음에서 시작됩니다.","오늘 하루 바로잡고 싶은 말투나 습관이 있다면 무엇인가요?","제 안의 굽은 길을 곧게 하여 주님을 맞게 하옵소서."],
+["시편 4:1-8","평안히 눕고 자기도 하리니","8","내가 평안히 눕고 자기도 하리니 나를 안전히 살게 하시는 이는 오직 여호와이시니이다","걱정이 많은 밤에 다윗은 하나님을 신뢰하며 잠자리에 듭니다. 잠드는 것도 믿음의 고백이 될 수 있습니다.","오늘 밤 잠들기 전 주님께 맡기고 싶은 걱정은 무엇인가요?","오늘 밤 주 안에서 평안히 눕고 자게 하옵소서."],
+["요한복음 14:23-27","세상이 주는 것과 다른 평안","27","평안을 너희에게 끼치노니 곧 나의 평안을 너희에게 주노라 내가 너희에게 주는 것은 세상이 주는 것과 같지 아니하니라 너희는 마음에 근심하지도 말고 두려워하지도 말라","세상의 평안은 문제가 사라져야 오지만 주님의 평안은 문제 한가운데서도 주어집니다. 예수님은 떠나시기 전 제자들에게 이 평안을 유산으로 남기셨습니다.","요즘 내 마음을 근심하게 하는 것은 무엇이며, 그 자리에 어떤 주님의 평안이 필요할까요?","세상이 줄 수 없는 주님의 평안으로 제 마음을 지켜 주옵소서."],
+["로마서 12:14-21","모든 사람과 더불어 화목하라","18","할 수 있거든 너희로서는 모든 사람과 더불어 화목하라","'할 수 있거든 너희로서는'이라는 말이 위로가 됩니다. 상대를 바꿀 수는 없지만 내 쪽에서 할 수 있는 몫은 있습니다.","화목을 위해 '내 쪽에서' 할 수 있는 일 한 가지는 무엇인가요?","제 몫의 화목을 먼저 실천하게 하옵소서."],
+["이사야 26:1-6","심지가 견고한 자","3","주께서 심지가 견고한 자를 평강하고 평강하도록 지키시리니 이는 그가 주를 신뢰함이니이다","'평강하고 평강하도록'은 넘치는 평안을 말합니다. 그 평안은 흔들리지 않는 성격이 아니라 주님을 신뢰하는 마음에서 옵니다.","오늘 내 마음이 쉽게 흔들리는 순간은 언제인가요? 그때 붙잡을 짧은 기도를 정해 보세요.","주를 신뢰하는 견고한 마음을 주옵소서."],
+["에베소서 2:13-18","막힌 담을 허시고","14","그는 우리의 화평이신지라 둘로 하나를 만드사 원수된 것 곧 중간에 막힌 담을 자기 육체로 허시고","예수님은 평화를 말로만 전하지 않으시고 몸으로 담을 허무셨습니다. 우리 가정과 교회, 일터에도 허물어야 할 담이 있습니다.","내가 쌓아 두고 있는 '마음의 담'은 무엇인가요?","저와 이웃 사이의 막힌 담을 허물어 주옵소서."],
+["이사야 35:1-6","사막이 백합화 같이","1","광야와 메마른 땅이 기뻐하며 사막이 백합화 같이 피어 즐거워하며","대림절 셋째 촛불은 '기쁨'입니다. 메마른 땅에 꽃이 핀다는 약속처럼 주님은 우리 삶의 가장 건조한 곳에서 기쁨을 피우십니다.","요즘 내 삶에서 가장 메마른 곳은 어디인가요? 그곳에 피어나기를 바라는 '꽃'을 적어 보세요.","메마른 제 마음에 기쁨의 꽃을 피워 주옵소서."],
+["빌립보서 4:4-9","주 안에서 항상 기뻐하라","4","주 안에서 항상 기뻐하라 내가 다시 말하노니 기뻐하라","바울은 감옥에서 이 편지를 썼습니다. 기쁨은 형편이 좋아서가 아니라 '주 안에' 있기 때문에 가능합니다. 이어지는 말씀은 염려 대신 감사로 기도하라고 권합니다.","지금 염려하는 일 하나를 감사의 기도로 바꾸어 적어 보세요.","형편보다 크신 주님 안에서 기뻐하게 하옵소서."],
+["데살로니가전서 5:16-24","범사에 감사하라","16-18","항상 기뻐하라 쉬지 말고 기도하라 범사에 감사하라 이것이 그리스도 예수 안에서 너희를 향하신 하나님의 뜻이니라","하나님의 뜻을 찾을 때 우리는 큰 결정만 떠올리지만, 이 말씀은 오늘의 태도가 곧 하나님의 뜻이라고 말합니다.","오늘 하루 '범사에 감사'를 실천할 수 있는 순간 세 가지를 찾아 적어 보세요.","오늘 하루 기뻐하고 기도하고 감사하게 하옵소서."],
+["스바냐 3:14-17","너로 말미암아 기뻐하시며","17","너의 하나님 여호와가 너의 가운데에 계시니 그는 구원을 베푸실 전능자이시라 그가 너로 말미암아 기쁨을 이기지 못하시며 너를 잠잠히 사랑하시며 너로 말미암아 즐거이 부르며 기뻐하시리라 하리라","우리가 하나님을 기뻐하기 전에 하나님이 먼저 우리를 기뻐하십니다. 나 때문에 노래하시는 하나님을 떠올려 보세요.","하나님이 나를 기뻐하신다는 사실을 믿기 어렵게 만드는 것은 무엇인가요?","저를 기뻐하시는 주님의 사랑 안에서 쉬게 하옵소서."],
+["누가복음 1:39-45","믿은 그 여자에게 복이 있도다","45","주께서 하신 말씀이 반드시 이루어지리라고 믿은 그 여자에게 복이 있도다","나이 든 엘리사벳과 젊은 마리아가 만나 서로의 기쁨을 축복합니다. 믿음의 기쁨은 함께 나눌 때 더 커집니다.","하나님이 내게 주신 기쁜 소식을 나누고 싶은 사람은 누구인가요?","주의 말씀이 이루어질 것을 믿는 기쁨을 주옵소서."],
+["누가복음 1:46-55","마리아의 노래","46-47","마리아가 이르되 내 영혼이 주를 찬양하며 내 마음이 하나님 내 구주를 기뻐하였음은","마리아는 앞날이 불확실한 가운데서도 노래합니다. 하나님은 비천한 자를 돌아보시고 낮은 자를 높이시는 분이기 때문입니다.","하나님이 나의 '낮은 자리'를 돌아보신 경험이 있다면 짧게 적어 보세요.","낮은 자를 돌아보시는 주님을 찬양합니다."],
+["시편 126:1-6","기쁨으로 거두리로다","5","눈물을 흘리며 씨를 뿌리는 자는 기쁨으로 거두리로다","눈물로 뿌린 씨는 헛되지 않습니다. 지금의 수고와 눈물을 하나님은 기억하시고 기쁨의 열매로 바꾸십니다.","지금 눈물로 씨를 뿌리고 있는 일은 무엇인가요?","눈물의 씨앗이 기쁨의 열매가 되게 하옵소서."],
+["마태복음 1:18-25","임마누엘","23","보라 처녀가 잉태하여 아들을 낳을 것이요 그의 이름은 임마누엘이라 하리라 하셨으니 이를 번역한즉 하나님이 우리와 함께 계시다 함이라","대림절 넷째 촛불은 '사랑'입니다. 요셉은 이해할 수 없는 상황에서도 마리아를 끝까지 지키며 사랑으로 순종했습니다.","이해되지 않아도 사랑으로 품어야 할 사람이나 상황이 있나요?","우리와 함께 계신 하나님, 사랑으로 순종하게 하옵소서."],
+["누가복음 1:26-38","말씀대로 이루어지이다","38","마리아가 이르되 주의 여종이오니 말씀대로 내게 이루어지이다 하매 천사가 떠나가니라","마리아의 대답은 모든 것을 이해했기 때문이 아니라 하나님을 신뢰했기 때문에 나왔습니다. 대림절은 내 뜻을 주님의 뜻에 맡기는 연습입니다.","내 뜻대로 붙잡고 있는 일 가운데 '말씀대로 이루어지이다'라고 맡기고 싶은 것은 무엇인가요?","말씀대로 제게 이루어지기를 원합니다."],
+["요한일서 4:7-12","하나님은 사랑이시라","9","하나님의 사랑이 우리에게 이렇게 나타난 바 되었으니 하나님이 자기의 독생자를 세상에 보내심은 그로 말미암아 우리를 살리려 하심이라","성탄은 하나님의 사랑이 눈에 보이게 나타난 사건입니다. 그 사랑을 받은 우리는 서로 사랑할 때 보이지 않는 하나님을 보여 줍니다.","이번 성탄에 사랑을 '보이게' 전하고 싶은 사람과 방법을 적어 보세요.","받은 사랑을 서로 나누게 하옵소서."],
+["미가 5:2-5","작은 고을 베들레헴","2","베들레헴 에브라다야 너는 유다 족속 중에 작을지라도 이스라엘을 다스릴 자가 네게서 내게로 나올 것이라 그의 근본은 상고에, 영원에 있느니라","하나님은 크고 화려한 도시가 아니라 작은 고을 베들레헴을 택하셨습니다. 작다고 느끼는 내 자리도 하나님께는 귀한 자리입니다.","내가 작고 보잘것없다고 느끼는 영역은 어디인가요? 그곳에서도 하나님이 일하실 수 있음을 믿나요?","작은 자리에서 일하시는 주님을 신뢰하게 하옵소서."],
+["고린도전서 13:1-7","사랑은 오래 참고","4","사랑은 오래 참고 사랑은 온유하며 시기하지 아니하며 사랑은 자랑하지 아니하며 교만하지 아니하며","연말의 분주함 속에서 가장 먼저 잃기 쉬운 것이 사랑입니다. 7절까지 읽으며 '사랑' 자리에 내 이름을 넣어 읽어 보세요.","'사랑은 ~하며' 가운데 오늘 내가 가장 연습하고 싶은 한 가지는 무엇인가요?","오래 참고 온유한 사랑을 제게 부어 주옵소서."],
+["누가복음 1:67-79","돋는 해가 위로부터","78-79","이는 우리 하나님의 긍휼로 인함이라 이로써 돋는 해가 위로부터 우리에게 임하여 어둠과 죽음의 그늘에 앉은 자에게 비치고 우리 발을 평강의 길로 인도하시리로다 하니라","말을 못 하던 사가랴가 입이 열리자 가장 먼저 찬양을 드립니다. 예수님은 어둠에 앉은 사람에게 떠오르는 해처럼 오십니다.","이번 성탄, 빛이 필요한 '어둠의 그늘'에 앉은 이웃은 누구인가요?","돋는 해처럼 오시는 주님, 제 발을 평강의 길로 인도하옵소서."]
+];
+const XMAS_EVE = ["이사야 9:2-7","한 아기가 우리에게 났고","6","이는 한 아기가 우리에게 났고 한 아들을 우리에게 주신 바 되었는데 그의 어깨에는 정사를 메었고 그의 이름은 기묘자라, 모사라, 전능하신 하나님이라, 영존하시는 아버지라, 평강의 왕이라 할 것임이라","성탄 전야입니다. 흑암에 행하던 백성이 큰 빛을 본다는 약속이 한 아기를 통해 이루어집니다. 오늘 밤 그 빛을 조용히 기다려 보세요.","다섯 이름(기묘자, 모사, 전능하신 하나님, 영존하시는 아버지, 평강의 왕) 가운데 지금 내게 가장 필요한 이름은 무엇인가요?","평강의 왕으로 오시는 주님, 오늘 밤 제 마음에 오시옵소서."];
+const CHRISTMAS = [
+["누가복음 2:4-14","구유에 누이신 구주","10-11","천사가 이르되 무서워하지 말라 보라 내가 온 백성에게 미칠 큰 기쁨의 좋은 소식을 너희에게 전하노라 오늘 다윗의 동네에 너희를 위하여 구주가 나셨으니 그는 그리스도 주시니라","성탄을 축하합니다. 구주는 궁궐이 아니라 구유에, 왕들이 아니라 밤을 지키던 목자들에게 먼저 알려졌습니다. 이 소식은 '너희를 위하여' 주어진 선물입니다.","'너희를 위하여 구주가 나셨다'는 말씀을 내 이름을 넣어 다시 읽어 보세요. 마음에 어떤 감정이 드나요?","저를 위해 오신 주님, 성탄의 기쁨으로 찬양합니다."],
+["누가복음 2:15-20","마음에 새긴 마리아","19","마리아는 이 모든 말을 마음에 지키어 생각하니라","목자들은 서둘러 찾아가 본 것을 전했고, 마리아는 그 모든 일을 마음에 담아 곱씹었습니다. 성탄 다음 날은 받은 은혜를 조용히 되새기기 좋은 날입니다.","이번 성탄에 마음에 새겨 두고 싶은 장면이나 말은 무엇인가요?","받은 은혜를 마음에 지키어 생각하게 하옵소서."],
+["요한복음 1:1-14","말씀이 육신이 되어","14","말씀이 육신이 되어 우리 가운데 거하시매 우리가 그의 영광을 보니 아버지의 독생자의 영광이요 은혜와 진리가 충만하더라","하나님은 멀리서 말씀만 하지 않으시고 우리와 같은 몸으로 우리 동네에 오셨습니다. 내 일상 한가운데에 주님이 거하신다는 뜻입니다.","오늘 내 일상의 어느 장소에서 주님이 함께 계심을 기억하고 싶나요?","제 일상 가운데 거하시는 주님을 보게 하옵소서."],
+["갈라디아서 4:4-7","아빠 아버지","6","너희가 아들이므로 하나님이 그 아들의 영을 우리 마음 가운데 보내사 아빠 아버지라 부르게 하셨느니라","예수님이 오신 목적은 우리를 하나님의 자녀로 삼으시려는 것이었습니다. 우리는 종이 아니라 자녀로서 하나님을 '아빠'라고 부를 수 있습니다.","하나님을 '아빠 아버지'라고 부를 때 마음에 떠오르는 것은 무엇인가요?","아빠 아버지, 자녀 삼아 주셔서 감사합니다."],
+["누가복음 2:25-35","내 눈이 주의 구원을 보았사오니","30","내 눈이 주의 구원을 보았사오니","시므온은 평생 기다린 끝에 아기 예수를 품에 안았습니다. 오래 기다린 사람의 고백은 짧지만 깊습니다.","나는 무엇을 오래 기다려 왔나요? 그 기다림 속에서 만난 하나님을 적어 보세요.","기다림 끝에 주의 구원을 보게 하옵소서."],
+["누가복음 2:36-40","감사하며 전한 안나","40","아기가 자라며 강하여지고 지혜가 충족하며 하나님의 은혜가 그의 위에 있더라","여든이 넘은 안나는 날마다 성전에서 기도하다가 아기를 보고 감사하며 사람들에게 전했습니다. 나이와 상관없이 하나님은 우리를 증인으로 쓰십니다.","올해 내가 받은 은혜를 누구에게 감사하며 전하고 싶나요?","날마다 기도하며 감사를 전하는 삶이 되게 하옵소서."],
+["시편 103:1-5","모든 은택을 잊지 말지어다","2","내 영혼아 여호와를 송축하며 그의 모든 은택을 잊지 말지어다","한 해의 마지막 날입니다. 다윗은 자기 영혼에게 '잊지 말라'고 말합니다. 감사는 기억하려는 결심에서 시작됩니다.","올해 하나님이 베푸신 은택을 다섯 가지 적어 보세요. 작고 사소한 것도 좋습니다.","한 해 동안 베푸신 모든 은혜를 잊지 않게 하옵소서."],
+["이사야 43:18-21","새 일을 행하리니","19","보라 내가 새 일을 행하리니 이제 나타낼 것이라 너희가 그것을 알지 못하겠느냐 반드시 내가 광야에 길을 사막에 강을 내리니","새해 첫날, 하나님은 지난 일에 머물지 말라고 하십니다. 길이 없어 보이는 광야에도 하나님은 길을 내십니다.","새해에 하나님께 기대하는 '새 일' 하나와 내가 새로 시작할 한 가지를 적어 보세요.","새해에 주님이 행하실 새 일을 기대합니다."],
+["잠언 3:1-8","범사에 그를 인정하라","5-6","너는 마음을 다하여 여호와를 신뢰하고 네 명철을 의지하지 말라 너는 범사에 그를 인정하라 그리하면 네 길을 지도하시리라","새해 계획을 세울 때 내 지혜만 의지하기 쉽습니다. 범사에 하나님을 인정한다는 것은 작은 결정에서도 주님께 묻는 것입니다.","올해 계획 가운데 먼저 주님께 맡기고 싶은 것은 무엇인가요?","범사에 주님을 인정하며 한 해를 걷게 하옵소서."],
+["디도서 2:11-14","은혜가 나타나","11","모든 사람에게 구원을 주시는 하나님의 은혜가 나타나","성탄으로 나타난 은혜는 우리를 가르쳐 신중하고 의롭고 경건하게 살게 합니다. 은혜는 받는 데서 끝나지 않고 삶의 방식을 바꿉니다.","은혜를 받은 사람으로서 올해 버리고 싶은 습관과 세우고 싶은 습관은 무엇인가요?","나타난 은혜가 제 삶의 방식을 바꾸게 하옵소서."],
+["시편 121:1-8","나의 도움은 여호와에게서","1-2","내가 산을 향하여 눈을 들리라 나의 도움이 어디서 올까 나의 도움은 천지를 지으신 여호와에게서로다","예루살렘으로 올라가는 순례자의 노래입니다. 새해의 길에서도 졸지도 주무시지도 않으시는 하나님이 우리를 지키십니다.","올해 가장 도움이 필요하다고 느끼는 영역은 어디인가요?","제 출입을 지키시는 주님만 의지하게 하옵소서."],
+["빌립보서 2:5-11","그리스도 예수의 마음","5","너희 안에 이 마음을 품으라 곧 그리스도 예수의 마음이니","성탄절의 마지막 날입니다. 예수님은 자기를 비워 종의 모습으로 오셨습니다. 성탄의 의미는 그 낮아지는 마음을 품고 사는 것입니다.","오늘 내가 '자기를 비우는' 작은 실천은 무엇이 될 수 있을까요?","겸손하신 주님의 마음을 제 안에 품게 하옵소서."]
+];
+const EPI0 = ["마태복음 2:1-12","별을 따라온 사람들","10","그들이 별을 보고 매우 크게 기뻐하고 기뻐하더라","주현절은 예수님이 온 세상에 드러나신 것을 기념하는 날입니다. 먼 나라의 박사들은 별을 따라 먼 길을 와서 가장 귀한 것을 드렸습니다.","주님께 드리고 싶은 나의 '황금, 유향, 몰약'은 무엇인가요?","빛으로 오신 주님께 제 귀한 것을 드리게 하옵소서."];
+const TRANSFIG = ["마태복음 17:1-8","오직 예수 외에는","8","제자들이 눈을 들어 보매 오직 예수 외에는 아무도 보이지 아니하더라","산 위에서 주님의 영광을 본 제자들은 두려워 엎드렸지만, 일어나 보니 오직 예수님만 계셨습니다. 사순절을 앞두고 내 시선이 머무는 곳을 다시 주님께로 옮깁니다.","요즘 주님보다 내 시선을 더 많이 차지하는 것은 무엇인가요?","오직 주님만 바라보는 사순절이 되게 하옵소서."];
+const EPI = [
+["마태복음 3:13-17","내 사랑하는 아들","17","하늘로부터 소리가 있어 말씀하시되 이는 내 사랑하는 아들이요 내 기뻐하는 자라 하시니라","예수님은 아직 아무 사역도 하시기 전에 '사랑하는 아들'이라는 음성을 들으셨습니다. 우리의 가치도 성과보다 먼저 하나님의 사랑에서 시작됩니다.","무엇을 해내지 않아도 사랑받는 존재라는 사실이 오늘 나에게 어떤 의미인가요?","성과보다 먼저 저를 사랑하시는 아버지를 신뢰하게 하옵소서."],
+["요한복음 2:1-11","무슨 말씀을 하시든지","5","그의 어머니가 하인들에게 이르되 너희에게 무슨 말씀을 하시든지 그대로 하라 하니라","잔치에 포도주가 떨어진 곤란한 순간, 하인들은 이해되지 않는 말씀에 그대로 순종했습니다. 기적은 평범한 물항아리를 채우는 순종에서 시작되었습니다.","오늘 내가 채워야 할 '물항아리', 곧 작지만 순종할 일은 무엇인가요?","말씀하시는 대로 순종하는 믿음을 주옵소서."],
+["마태복음 4:18-22","나를 따라오라","19","말씀하시되 나를 따라오라 내가 너희를 사람을 낚는 어부가 되게 하리라 하시니","예수님은 그물을 던지던 일터에서 제자들을 부르셨습니다. 부르심은 교회 안에서만이 아니라 오늘 내가 일하는 자리에서도 들립니다.","내 일터나 학교, 가정에서 주님을 따른다는 것은 구체적으로 어떤 모습일까요?","제 일상의 자리에서 주님을 따르게 하옵소서."],
+["마태복음 5:13-16","너희 빛이 비치게 하라","16","이같이 너희 빛이 사람 앞에 비치게 하여 그들로 너희 착한 행실을 보고 하늘에 계신 너희 아버지께 영광을 돌리게 하라","등불은 크게 소리 내지 않아도 방 안을 밝힙니다. 그리스도인의 빛은 말보다 착한 행실로 드러납니다.","오늘 누군가에게 '빛'이 될 수 있는 작은 행동 하나를 정해 보세요.","제 삶이 작은 등불처럼 주님을 비추게 하옵소서."],
+["마태복음 5:1-10","복이 있나니","3","심령이 가난한 자는 복이 있나니 천국이 그들의 것임이요","예수님이 말씀하신 복은 세상이 말하는 복과 다릅니다. 부족함을 아는 사람, 애통하는 사람, 온유한 사람이 복이 있다고 하십니다.","여덟 가지 복 가운데 오늘 나에게 가장 위로가 되는 말씀은 무엇인가요?","주님이 말씀하시는 참된 복을 구하게 하옵소서."],
+["누가복음 5:1-11","말씀에 의지하여","5","시몬이 대답하여 이르되 선생님 우리들이 밤이 새도록 수고하였으되 잡은 것이 없지마는 말씀에 의지하여 내가 그물을 내리리이다 하고","밤새 허탕을 친 어부 베드로가 예수님의 말씀에 다시 그물을 내립니다. 내 경험이 '안 된다'고 할 때 말씀에 의지하는 것이 믿음입니다.","경험상 '안 될 것 같아서' 포기한 일이 있나요? 다시 말씀에 의지해 볼 일은 무엇인가요?","제 경험보다 주님의 말씀을 의지하게 하옵소서."],
+["이사야 60:1-6","일어나라 빛을 발하라","1","일어나라 빛을 발하라 이는 네 빛이 이르렀고 여호와의 영광이 네 위에 임하였음이니라","빛을 발하라는 명령보다 먼저 '네 빛이 이르렀다'는 선언이 있습니다. 우리는 스스로 빛을 만드는 것이 아니라 받은 빛을 비추는 사람들입니다.","주님께 받은 빛을 오늘 어디에서 비추고 싶나요?","주의 영광을 비추는 사람으로 일어나게 하옵소서."],
+["요한복음 1:35-42","와서 보라","39","예수께서 이르시되 와서 보라 그러므로 그들이 가서 계신 데를 보고 그 날 함께 거하니 때가 열 시쯤 되었더라","예수님은 긴 설명 대신 '와서 보라'고 초대하셨습니다. 안드레는 주님과 하루를 보낸 뒤 가장 먼저 자기 형제를 데려왔습니다.","내가 '와서 보라'고 초대하고 싶은 사람은 누구인가요?","주님과 함께 머무는 기쁨을 이웃에게 나누게 하옵소서."],
+["마가복음 1:29-39","새벽 한적한 곳에서","35","새벽 아직도 밝기 전에 예수께서 일어나 나가 한적한 곳으로 가사 거기서 기도하시더니","바쁜 하루를 보낸 다음 날 새벽에도 예수님은 먼저 기도의 자리로 가셨습니다. 분주할수록 한적한 곳이 더 필요합니다.","하루 가운데 나만의 '한적한 곳'과 시간은 언제, 어디로 정할 수 있을까요?","분주한 하루 속에서도 주님과 머무는 시간을 지키게 하옵소서."],
+["마태복음 5:43-48","원수를 사랑하며","44","나는 너희에게 이르노니 너희 원수를 사랑하며 너희를 박해하는 자를 위하여 기도하라","원수를 사랑하는 일은 감정보다 기도에서 시작됩니다. 미운 사람을 위해 짧게라도 기도할 때 내 마음이 먼저 풀립니다.","마음이 불편한 사람 한 명을 떠올리며 그를 위한 한 줄 기도를 적어 보세요.","미운 마음을 기도로 바꾸게 하옵소서."],
+["마가복음 2:1-12","친구를 메고 온 사람들","5","예수께서 그들의 믿음을 보시고 중풍병자에게 이르시되 작은 자야 네 죄 사함을 받았느니라 하시니","네 사람은 지붕을 뜯어서라도 친구를 주님께 데려갔습니다. 예수님은 '그들의 믿음'을 보셨습니다. 내 믿음이 다른 사람이 회복되는 통로가 될 수 있습니다.","내가 기도로 '메고' 주님께 데려가고 싶은 사람은 누구인가요?","친구를 위해 지붕을 여는 믿음을 주옵소서."]
+];
+const ASH = ["요엘 2:12-17","옷을 찢지 말고 마음을 찢고","13","너희는 옷을 찢지 말고 마음을 찢고 너희 하나님 여호와께로 돌아올지어다 그는 은혜로우시며 자비로우시며 노하기를 더디하시며 인애가 크시사 뜻을 돌이켜 재앙을 내리지 아니하시나니","재의 수요일, 사순절이 시작됩니다. 하나님은 겉모습의 변화보다 마음의 돌이킴을 원하십니다. 돌아갈 곳이 은혜로우신 하나님이기에 우리는 용기를 냅니다.","사순절 40일 동안 절제하거나 새롭게 실천할 한 가지를 정해 보세요.","겉이 아니라 마음을 돌이켜 주께 돌아가게 하옵소서."];
+const LENT = [
+["마태복음 4:1-11","말씀으로 사는 사람","4","예수께서 대답하여 이르시되 기록되었으되 사람이 떡으로만 살 것이 아니요 하나님의 입으로부터 나오는 모든 말씀으로 살 것이라 하였느니라 하시니","예수님은 배고픈 광야에서 말씀으로 유혹을 이기셨습니다. 시험은 약할 때 오지만 말씀은 그때 가장 큰 힘이 됩니다.","요즘 나를 가장 자주 흔드는 유혹은 무엇인가요? 그때 붙잡을 말씀 한 구절을 정해 보세요.","말씀으로 유혹을 이기게 하옵소서."],
+["시편 51:1-12","정한 마음을 창조하시고","10","하나님이여 내 속에 정한 마음을 창조하시고 내 안에 정직한 영을 새롭게 하소서","다윗은 큰 죄를 지은 뒤 변명 대신 정직하게 고백합니다. 깨끗한 마음은 내가 고쳐 만드는 것이 아니라 하나님이 새로 지어 주시는 것입니다.","주님께 정직하게 내어놓고 싶은 마음의 얼룩은 무엇인가요?","제 안에 정한 마음을 새로 지어 주옵소서."],
+["마태복음 6:1-6","은밀한 중에 보시는 아버지","6","너는 기도할 때에 네 골방에 들어가 문을 닫고 은밀한 중에 계신 네 아버지께 기도하라 은밀한 중에 보시는 네 아버지께서 갚으시리라","사람에게 보이기 위한 신앙은 쉽게 지칩니다. 아무도 보지 않는 골방에서 하나님과 나누는 시간이 신앙의 뿌리를 깊게 합니다.","나에게 '골방'은 어디인가요? 오늘 5분이라도 그곳에서 기도해 보세요.","은밀한 중에 보시는 아버지 앞에서 살게 하옵소서."],
+["마태복음 6:16-21","보물이 있는 곳","21","네 보물 있는 그 곳에는 네 마음도 있느니라","내 시간과 돈이 어디로 흘러가는지 보면 내 마음이 어디에 있는지 알 수 있습니다. 사순절은 내 보물을 점검하는 시간입니다.","지난 일주일 동안 내 시간과 돈이 가장 많이 간 곳은 어디였나요?","제 마음과 보물을 하늘에 두게 하옵소서."],
+["누가복음 15:17-24","달려가 안아 주는 아버지","20","이에 일어나서 아버지께로 돌아가니라 아직도 거리가 먼데 아버지가 그를 보고 측은히 여겨 달려가 목을 안고 입을 맞추니","아들이 준비한 사과의 말이 끝나기도 전에 아버지는 달려와 안아 줍니다. 회개는 벌 받으러 가는 길이 아니라 기다리시는 아버지 품으로 돌아가는 길입니다.","내가 하나님께 돌아가기를 망설이게 만드는 생각은 무엇인가요?","기다리시는 아버지 품으로 돌아가게 하옵소서."],
+["이사야 58:6-9","내가 기뻐하는 금식","6","내가 기뻐하는 금식은 흉악의 결박을 풀어 주며 멍에의 줄을 끌러 주며 압제 당하는 자를 자유하게 하며 모든 멍에를 꺾는 것이 아니겠느냐","하나님이 기뻐하시는 절제는 굶는 것 자체보다 이웃을 돌보는 데까지 이어지는 것입니다. 아낀 것을 나누면 금식이 사랑이 됩니다.","사순절에 아낀 시간이나 돈을 누구와 어떻게 나눌 수 있을까요?","절제가 나눔으로 이어지게 하옵소서."],
+["요한복음 3:14-21","이처럼 사랑하사","16","하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니 이는 그를 믿는 자마다 멸망하지 않고 영생을 얻게 하려 하심이라","너무 익숙해서 그냥 지나치기 쉬운 말씀입니다. '세상'과 '믿는 자마다' 자리에 내 이름을 넣어 천천히 읽어 보세요.","내 이름을 넣어 읽었을 때 새롭게 다가온 단어는 무엇인가요?","저를 이처럼 사랑하신 하나님께 감사합니다."],
+["누가복음 19:1-10","삭개오야 속히 내려오라","10","인자가 온 것은 잃어버린 자를 찾아 구원하려 함이니라","모두가 손가락질하던 삭개오의 이름을 예수님이 먼저 불러 주셨습니다. 받아 주시는 사랑을 경험한 삭개오는 스스로 삶을 바꾸었습니다.","주님이 내 이름을 부르며 '오늘 네 집에 머물겠다'고 하신다면 어떤 변화가 일어날까요?","잃어버린 자를 찾으시는 주님, 저를 찾아 주셔서 감사합니다."],
+["요한복음 4:7-15","목마르지 않는 물","14","내가 주는 물을 마시는 자는 영원히 목마르지 아니하리니 내가 주는 물은 그 속에서 영생하도록 솟아나는 샘물이 되리라","사람들을 피해 한낮에 물 길으러 온 여인에게 예수님이 먼저 말을 거셨습니다. 우리 안의 깊은 목마름은 주님만 채우실 수 있습니다.","요즘 내 마음이 가장 목말라 하는 것은 무엇인가요?","제 안에 마르지 않는 생수가 솟아나게 하옵소서."],
+["요한복음 9:1-7","하나님이 하시는 일","3","예수께서 대답하시되 이 사람이나 그 부모의 죄로 인한 것이 아니라 그에게서 하나님이 하시는 일을 나타내고자 하심이라","사람들은 고통의 원인을 따지며 누구 탓인지 물었지만, 예수님은 그 자리에서 하나님이 하실 일을 보셨습니다.","'왜 이런 일이'라고 묻게 되는 내 삶의 한 부분에서 하나님이 하실 일을 기대해 볼 수 있을까요?","제 아픔 속에서도 하나님이 하실 일을 보게 하옵소서."],
+["마태복음 16:21-26","자기 십자가를 지고","24","이에 예수께서 제자들에게 이르시되 누구든지 나를 따라오려거든 자기를 부인하고 자기 십자가를 지고 나를 따를 것이니라","자기를 부인한다는 것은 나를 미워하라는 뜻이 아니라 내 고집보다 주님을 앞에 두라는 뜻입니다. 십자가는 사랑 때문에 기꺼이 지는 짐입니다.","오늘 사랑 때문에 기꺼이 져야 할 나의 '작은 십자가'는 무엇인가요?","제 고집보다 주님을 앞세우며 따르게 하옵소서."],
+["요한일서 1:5-10","우리가 죄를 자백하면","9","만일 우리가 우리 죄를 자백하면 그는 미쁘시고 의로우사 우리 죄를 사하시며 우리를 모든 불의에서 깨끗하게 하실 것이요","숨기면 무거워지고 고백하면 가벼워집니다. 하나님은 고백하는 사람을 미쁘게, 곧 신실하게 용서하십니다.","오늘 주님께 솔직하게 고백하고 내려놓을 것은 무엇인가요?","고백하는 저를 깨끗하게 하시는 주님을 신뢰합니다."],
+["마태복음 18:21-27","일곱 번을 일흔 번까지","22","예수께서 이르시되 네게 이르노니 일곱 번뿐 아니라 일곱 번을 일흔 번까지라도 할지니라","베드로는 일곱 번이면 충분하다고 생각했지만 예수님은 셈을 멈추라고 하십니다. 용서는 내가 먼저 엄청난 빚을 탕감받은 사람이기에 가능합니다.","아직 용서하기 어려운 일이 있다면, 오늘 할 수 있는 작은 용서의 걸음은 무엇일까요?","탕감받은 사람으로서 용서하는 마음을 주옵소서."],
+["요한복음 11:17-27","나는 부활이요 생명이니","25","예수께서 이르시되 나는 부활이요 생명이니 나를 믿는 자는 죽어도 살겠고","오빠를 잃은 마르다에게 예수님은 교리보다 자신을 먼저 소개하십니다. 슬픔의 한가운데서 주님은 '이것을 네가 믿느냐'고 물으십니다.","상실이나 슬픔 속에 있는 나 또는 이웃에게 이 말씀은 어떤 위로가 되나요?","부활이요 생명이신 주님을 믿습니다."],
+["이사야 53:1-6","그가 찔림은","5","그가 찔림은 우리의 허물 때문이요 그가 상함은 우리의 죄악 때문이라 그가 징계를 받으므로 우리는 평화를 누리고 그가 채찍에 맞으므로 우리는 나음을 받았도다","'우리'라는 단어가 반복됩니다. 십자가의 고난은 먼 옛날의 비극이 아니라 나를 위한 사랑입니다.","'우리' 대신 '나'를 넣어 5절을 다시 읽어 보세요. 어떤 마음이 드나요?","저를 위해 상하신 주님의 사랑을 기억하게 하옵소서."],
+["히브리서 4:12-16","은혜의 보좌 앞에 담대히","16","그러므로 우리는 긍휼하심을 받고 때를 따라 돕는 은혜를 얻기 위하여 은혜의 보좌 앞에 담대히 나아갈 것이니라","예수님은 우리의 약함을 아시는 분입니다. 그래서 우리는 부족한 모습 그대로 담대히 나아갈 수 있습니다.","오늘 '때를 따라 돕는 은혜'가 필요한 일은 무엇인가요?","약함을 아시는 주님 앞에 담대히 나아갑니다."],
+["마가복음 10:35-45","섬기려 하고","45","인자가 온 것은 섬김을 받으려 함이 아니라 도리어 섬기려 하고 자기 목숨을 많은 사람의 대속물로 주려 함이니라","제자들은 누가 높은 자리에 앉을지 다투었지만, 예수님은 섬기는 사람이 크다고 하셨습니다. 섬김은 거창한 봉사보다 일상의 작은 배려에서 시작됩니다.","오늘 가정이나 일터에서 누구를 어떻게 섬길 수 있을까요?","섬기러 오신 주님을 닮게 하옵소서."],
+["시편 32:1-7","허물의 사함을 받은 복","1","허물의 사함을 받고 자신의 죄가 가려진 자는 복이 있도다","다윗은 죄를 숨겼을 때 뼈가 쇠하는 듯했지만 고백하자 자유를 얻었다고 노래합니다. 용서받은 사람에게는 숨을 곳 대신 피난처가 생깁니다.","용서받은 기쁨을 마지막으로 깊이 느꼈던 때는 언제인가요?","주님이 저의 피난처이심을 감사합니다."]
+];
+const HOLY = [
+["마태복음 21:1-11","호산나","9","앞에서 가고 뒤에서 따르는 무리가 소리 높여 이르되 호산나 다윗의 자손이여 찬송하리로다 주의 이름으로 오시는 이여 가장 높은 곳에서 호산나 하더라","종려주일, 예수님은 군마가 아니라 나귀를 타고 예루살렘에 들어가십니다. 그날 '호산나'를 외치던 무리는 며칠 뒤 '십자가에 못 박으라'고 외쳤습니다.","내가 기대하는 '왕'의 모습과 나귀를 타신 예수님의 모습은 어떻게 다른가요?","겸손한 왕으로 오신 주님을 진심으로 찬양하게 하옵소서."],
+["마가복음 11:15-19","만민이 기도하는 집","17","이에 가르쳐 이르시되 기록된 바 내 집은 만민이 기도하는 집이라 칭함을 받으리라고 하지 아니하였느냐 너희는 강도의 소굴을 만들었도다 하시매","예수님은 기도의 자리가 장사의 자리가 된 것을 보고 바로잡으셨습니다. 내 마음도 주님이 머무시는 성전입니다.","내 마음의 성전에서 정리해야 할 것은 무엇인가요?","제 마음을 기도하는 집으로 새롭게 하옵소서."],
+["마가복음 12:28-34","가장 큰 계명","30-31","네 마음을 다하고 목숨을 다하고 뜻을 다하고 힘을 다하여 주 너의 하나님을 사랑하라 하신 것이요 둘째는 이것이니 네 이웃을 네 자신과 같이 사랑하라 하신 것이라 이보다 더 큰 계명이 없느니라","고난을 앞둔 예수님은 신앙의 핵심을 두 문장으로 정리하십니다. 하나님 사랑과 이웃 사랑은 따로 떨어져 있지 않습니다.","오늘 하나님을 사랑하는 일 하나, 이웃을 사랑하는 일 하나를 정해 보세요.","온 마음으로 하나님과 이웃을 사랑하게 하옵소서."],
+["마가복음 14:3-9","옥합을 깨뜨린 여인","8","그는 힘을 다하여 내 몸에 향유를 부어 내 장례를 미리 준비하였느니라","사람들은 낭비라고 했지만 예수님은 그 여인이 힘을 다하여 드렸다고 칭찬하셨습니다. 주님은 크기보다 마음을 보십니다.","내가 주님께 아낌없이 드리고 싶은 '옥합'은 무엇인가요?","제 힘을 다하여 주님을 사랑하게 하옵소서."],
+["요한복음 13:3-15","서로 발을 씻어 주라","14","내가 주와 또는 선생이 되어 너희 발을 씻었으니 너희도 서로 발을 씻어 주는 것이 옳으니라","세족 목요일, 예수님은 마지막 밤에 수건을 두르고 제자들의 발을 씻기셨습니다. 배신할 유다의 발도 씻기셨습니다.","내가 낮은 자리에서 섬겨야 할 사람은 누구인가요?","낮은 자리에서 서로 섬기는 사랑을 배우게 하옵소서."],
+["누가복음 23:33-46","아버지 저들을 사하여 주옵소서","34","이에 예수께서 이르시되 아버지 저들을 사하여 주옵소서 자기들이 하는 것을 알지 못함이니이다 하시더라 그들이 그의 옷을 나눠 제비 뽑을새","성금요일, 십자가 위에서 예수님의 첫 기도는 용서의 기도였습니다. 오늘은 말을 줄이고 십자가의 사랑 앞에 조용히 머물러 보세요.","십자가 앞에서 오늘 내가 드리고 싶은 고백을 한 문장으로 적어 보세요.","저를 위해 십자가를 지신 주님, 감사합니다."],
+["누가복음 23:50-56","무덤 앞의 기다림","56","돌아가 향품과 향유를 준비하더라 계명을 따라 안식일에 쉬더라","성토요일은 침묵의 날입니다. 여인들은 슬픔 속에서도 할 수 있는 일을 준비하며 기다렸습니다. 아무 일도 일어나지 않는 것 같은 날에도 하나님은 일하고 계십니다.","하나님이 침묵하시는 것 같은 내 삶의 영역은 어디인가요?","침묵의 날에도 주님을 신뢰하며 기다리게 하옵소서."]
+];
+const EASTER0 = ["마태복음 28:1-10","그가 살아나셨느니라","6","그가 여기 계시지 않고 그가 말씀하시던 대로 살아나셨느니라 와서 그가 누우셨던 곳을 보라","주님이 부활하셨습니다. 무덤을 찾아간 여인들은 두려움과 큰 기쁨을 함께 안고 달려갔습니다. 부활은 말씀하시던 대로 이루시는 하나님의 신실하심입니다.","부활의 소식을 오늘 누구에게 전하고 싶나요?","살아나신 주님, 부활의 기쁨으로 찬양합니다."];
+const ASCENSION = ["사도행전 1:6-11","땅 끝까지 내 증인","8","오직 성령이 너희에게 임하시면 너희가 권능을 받고 예루살렘과 온 유대와 사마리아와 땅 끝까지 이르러 내 증인이 되리라 하시니라","승천하신 주님은 제자들에게 하늘만 쳐다보지 말고 증인으로 살라고 하십니다. 나의 '예루살렘'은 가장 가까운 가족과 이웃입니다.","나의 예루살렘, 곧 가장 가까운 곳에서 증인으로 살아야 할 대상은 누구인가요?","성령의 능력으로 주님의 증인이 되게 하옵소서."];
+const EASTER = [
+["누가복음 24:28-35","마음이 뜨겁지 아니하더냐","32","그들이 서로 말하되 길에서 우리에게 말씀하시고 우리에게 성경을 풀어 주실 때에 우리 속에서 마음이 뜨겁지 아니하더냐 하고","실망한 채 엠마오로 가던 두 제자 곁에 주님이 함께 걸으셨지만 그들은 알아보지 못했습니다. 주님은 내가 알아차리지 못할 때에도 곁에서 걷고 계십니다.","최근 말씀을 읽다가 마음이 뜨거워졌던 순간이 있었나요?","제 길에 동행하시는 주님을 알아보게 하옵소서."],
+["요한복음 20:19-23","평강이 있을지어다","21","예수께서 또 이르시되 너희에게 평강이 있을지어다 아버지께서 나를 보내신 것 같이 나도 너희를 보내노라","두려워 문을 잠근 제자들에게 부활하신 주님이 오셔서 평강을 주시고, 다시 세상으로 보내십니다. 평강은 숨기 위한 것이 아니라 나아가기 위한 힘입니다.","오늘 주님이 나를 '보내시는' 곳은 어디인가요?","주님의 평강을 안고 보내신 곳으로 나아가게 하옵소서."],
+["요한복음 20:24-29","보지 못하고 믿는 자","29","예수께서 이르시되 너는 나를 본 고로 믿느냐 보지 못하고 믿는 자들은 복되도다 하시니라","의심하던 도마에게 예수님은 꾸중 대신 상처 난 손을 내미셨습니다. 주님은 우리의 의심도 정직하게 가져오기를 원하십니다.","요즘 믿음 가운데 솔직하게 의심이 드는 부분이 있다면 무엇인가요?","의심까지 받아 주시는 주님을 믿습니다."],
+["요한복음 21:15-19","네가 나를 사랑하느냐","15","그들이 조반 먹은 후에 예수께서 시몬 베드로에게 이르시되 요한의 아들 시몬아 네가 이 사람들보다 나를 더 사랑하느냐 하시니 이르되 주님 그러하나이다 내가 주님을 사랑하는 줄 주님께서 아시나이다 이르시되 내 어린 양을 먹이라 하시고","세 번 부인했던 베드로에게 주님은 세 번 사랑을 물으시고 다시 사명을 맡기십니다. 실패는 끝이 아니라 회복의 자리가 될 수 있습니다.","내가 실패했다고 느끼는 자리에서 주님이 다시 맡기시는 일은 무엇일까요?","실패한 자리에서 다시 일으키시는 주님을 사랑합니다."],
+["요한복음 10:7-15","선한 목자","11","나는 선한 목자라 선한 목자는 양들을 위하여 목숨을 버리거니와","목자는 양의 이름을 알고 앞서서 인도합니다. 주님은 나를 이름으로 아시고 목숨까지 내어 주신 목자이십니다.","선한 목자이신 주님께 오늘 맡기고 싶은 걱정은 무엇인가요?","선한 목자이신 주님의 음성을 따르게 하옵소서."],
+["시편 23:1-6","내게 부족함이 없으리로다","1","여호와는 나의 목자시니 내게 부족함이 없으리로다","다윗은 모든 것이 넉넉해서가 아니라 목자가 계시기 때문에 부족함이 없다고 고백합니다. 사망의 음침한 골짜기에서도 목자는 함께하십니다.","오늘 나에게 '푸른 풀밭과 쉴 만한 물가'는 무엇인가요?","목자 되신 주님 안에서 부족함이 없음을 고백합니다."],
+["요한복음 14:1-6","마음에 근심하지 말라","1","너희는 마음에 근심하지 말라 하나님을 믿으니 또 나를 믿으라","제자들이 불안해하던 마지막 밤, 예수님은 근심하지 말라고 하시며 아버지 집에 처소를 예비하러 간다고 하십니다. 우리의 앞날은 길이신 주님 손에 있습니다.","요즘 나를 근심하게 하는 미래의 일은 무엇인가요?","길이요 진리요 생명이신 주님을 믿습니다."],
+["요한복음 15:1-8","포도나무와 가지","5","나는 포도나무요 너희는 가지라 그가 내 안에, 내가 그 안에 거하면 사람이 열매를 많이 맺나니 나를 떠나서는 너희가 아무 것도 할 수 없음이라","가지는 애써서 열매를 짜내지 않습니다. 나무에 붙어 있으면 열매는 자연스럽게 맺힙니다. 신앙도 노력보다 먼저 머무름입니다.","오늘 주님 안에 '거한다'는 것을 어떤 습관으로 실천할 수 있을까요?","주님 안에 머물러 열매 맺게 하옵소서."],
+["요한복음 15:9-17","서로 사랑하라","12","내 계명은 곧 내가 너희를 사랑한 것 같이 너희도 서로 사랑하라 하는 이것이니라","예수님은 우리를 종이 아니라 친구라고 부르십니다. 주님께 받은 사랑이 우리 사랑의 기준이자 힘입니다.","주님이 나를 사랑하신 방식 가운데 내가 이웃에게 실천하고 싶은 것은 무엇인가요?","주님이 사랑하신 것 같이 서로 사랑하게 하옵소서."],
+["사도행전 2:42-47","날마다 마음을 같이하여","46","날마다 마음을 같이하여 성전에 모이기를 힘쓰고 집에서 떡을 떼며 기쁨과 순전한 마음으로 음식을 먹고","초대교회는 함께 배우고, 먹고, 기도하고, 나누었습니다. 신앙은 혼자가 아니라 함께 걸을 때 더 단단해집니다.","이번 주에 함께 식사하거나 안부를 나누고 싶은 믿음의 지체는 누구인가요?","함께하는 기쁨이 있는 공동체가 되게 하옵소서."],
+["베드로전서 1:3-9","산 소망","3","찬송하리로다 우리 주 예수 그리스도의 아버지 하나님이 그 많으신 긍휼대로 예수 그리스도를 죽은 자 가운데서 부활하게 하심으로 말미암아 우리를 거듭나게 하사 산 소망이 있게 하시며","부활은 우리에게 살아 있는 소망을 줍니다. 여러 가지 시험으로 근심할 때에도 그 소망은 사라지지 않습니다.","지금 겪는 어려움 속에서 붙잡을 '산 소망'은 무엇인가요?","부활의 산 소망으로 오늘을 살게 하옵소서."],
+["고린도전서 15:51-58","헛되지 않은 수고","58","그러므로 내 사랑하는 형제들아 견실하며 흔들리지 말며 항상 주의 일에 더욱 힘쓰는 자들이 되라 이는 너희 수고가 주 안에서 헛되지 않은 줄 앎이라","부활이 있기에 오늘의 작은 수고도 헛되지 않습니다. 아무도 알아주지 않는 섬김도 주님은 기억하십니다.","아무도 알아주지 않아 지쳐 있던 수고가 있다면 무엇인가요?","주 안에서 헛되지 않은 수고를 계속하게 하옵소서."]
+];
+const PENTECOST = ["사도행전 2:1-11","성령이 임하시니","4","그들이 다 성령의 충만함을 받고 성령이 말하게 하심을 따라 다른 언어들로 말하기를 시작하니라","성령강림주일입니다. 함께 모여 기도하던 사람들 위에 성령이 임하시자 여러 나라 사람들이 각자 자기 말로 복음을 들었습니다. 성령은 담을 넘어 서로 통하게 하십니다.","내가 성령의 도우심을 가장 간절히 구하는 영역은 어디인가요?","성령님, 오늘 제 삶에 충만히 임하여 주옵소서."];
+const THANKS = ["시편 100:1-5","감사함으로 그의 문에","4","감사함으로 그의 문에 들어가며 찬송함으로 그의 궁정에 들어가서 그에게 감사하며 그의 이름을 송축할지어다","추수감사주일입니다. 한 해 동안 거둔 열매는 내 수고만이 아니라 하나님이 주신 햇빛과 비의 결과입니다. 감사는 하나님 앞에 들어가는 문입니다.","올해 거둔 열매 가운데 가장 감사한 것 세 가지를 적어 보세요.","한 해 동안 베푸신 은혜에 감사로 나아갑니다."];
+const ORD = [
+["갈라디아서 5:22-26","성령의 열매","22-23","오직 성령의 열매는 사랑과 희락과 화평과 오래 참음과 자비와 양선과 충성과 온유와 절제니 이같은 것을 금지할 법이 없느니라","아홉 가지 열매는 한 송이처럼 함께 자랍니다. 성령 안에서 걸을 때 성품은 천천히, 그러나 분명하게 익어 갑니다.","아홉 가지 열매 가운데 요즘 가장 필요하다고 느끼는 것은 무엇인가요?","성령님, 제 안에 아름다운 열매를 맺게 하옵소서."],
+["마태복음 6:25-34","먼저 그의 나라를","33","너희는 먼저 그의 나라와 그의 의를 구하라 그리하면 이 모든 것을 너희에게 더하시리라","하늘의 새와 들의 백합화를 돌보시는 아버지가 나를 더 귀하게 여기십니다. 염려는 내일을 바꾸지 못하지만 우선순위는 오늘을 바꿉니다.","오늘 할 일 목록에서 '먼저' 하나님께 드릴 시간을 어디에 넣을 수 있을까요?","먼저 주의 나라를 구하며 염려를 내려놓게 하옵소서."],
+["마태복음 7:24-27","반석 위에 지은 집","24","그러므로 누구든지 나의 이 말을 듣고 행하는 자는 그 집을 반석 위에 지은 지혜로운 사람 같으리니","두 집은 맑은 날에는 똑같아 보였지만 비바람이 오자 차이가 드러났습니다. 차이는 듣는 데 있지 않고 행하는 데 있었습니다.","최근 들은 말씀 가운데 아직 행하지 못한 것이 있다면 무엇인가요?","들은 말씀을 행하여 반석 위에 서게 하옵소서."],
+["야고보서 1:19-25","듣기는 속히, 말하기는 더디","19","내 사랑하는 형제들아 너희가 알거니와 사람마다 듣기는 속히 하고 말하기는 더디 하며 성내기도 더디 하라","관계의 많은 문제는 듣기 전에 말하고, 생각하기 전에 화내는 데서 생깁니다. 오늘은 한 박자 늦게 말하는 연습을 해 보세요.","오늘 대화할 때 '먼저 끝까지 듣기'를 실천하고 싶은 사람은 누구인가요?","듣기는 속히, 말하기와 성내기는 더디 하게 하옵소서."],
+["야고보서 3:2-10","혀의 힘","10","한 입으로 찬송과 저주가 나오는도다 내 형제들아 이것이 마땅하지 아니하니라","작은 불씨가 큰 숲을 태우듯 말 한마디가 관계를 살리기도, 무너뜨리기도 합니다. 예배 때 찬양하던 입술이 일상에서도 축복하기를 원하십니다.","오늘 내가 하는 말 가운데 줄이고 싶은 말과 늘리고 싶은 말은 무엇인가요?","제 입술이 살리는 말을 하게 하옵소서."],
+["누가복음 10:30-37","너도 이와 같이 하라","37","이르되 자비를 베푼 자니이다 예수께서 이르시되 가서 너도 이와 같이 하라 하시니라","제사장과 레위인은 지나쳤고 사마리아인은 멈추었습니다. 이웃은 찾아다니는 것이 아니라 내가 되어 주는 것입니다.","오늘 내가 멈추어 돌아봐야 할 사람은 누구인가요?","바쁜 걸음을 멈추고 이웃이 되어 주게 하옵소서."],
+["누가복음 10:38-42","한 가지만이라도 족하니라","41-42","주께서 대답하여 이르시되 마르다야 마르다야 네가 많은 일로 염려하고 근심하나 몇 가지만 하든지 혹은 한 가지만이라도 족하니라 마리아는 이 좋은 편을 택하였으니 빼앗기지 아니하리라 하시니라","마르다의 섬김은 귀했지만 분주함이 마음을 빼앗았습니다. 주님은 일보다 먼저 주님 곁에 앉는 좋은 편을 권하십니다.","요즘 나를 분주하게 만드는 '많은 일' 가운데 내려놓을 수 있는 것은 무엇인가요?","분주함 속에서도 주님 곁에 앉는 좋은 편을 택하게 하옵소서."],
+["마태복음 11:25-30","내가 너희를 쉬게 하리라","28","수고하고 무거운 짐 진 자들아 다 내게로 오라 내가 너희를 쉬게 하리라","주님은 짐을 다 해결한 뒤에 오라고 하지 않으시고 무거운 짐을 진 그대로 오라고 하십니다. 주님의 멍에는 함께 지는 멍에입니다.","지금 내가 지고 있는 가장 무거운 짐은 무엇인가요?","무거운 짐을 진 그대로 주님께 나아가 쉼을 얻게 하옵소서."],
+["골로새서 3:12-17","서로 용납하여 용서하라","13","누가 누구에게 불만이 있거든 서로 용납하여 피차 용서하되 주께서 너희를 용서하신 것 같이 너희도 그리하고","옷을 입듯 긍휼과 겸손과 온유를 입으라고 합니다. 매일 아침 옷을 고르듯 오늘 입을 마음을 골라 보세요.","오늘 입고 나가고 싶은 '마음의 옷'은 무엇인가요?","주님이 용서하신 것 같이 용서하게 하옵소서."],
+["골로새서 3:22-25","주께 하듯 하라","23","무슨 일을 하든지 마음을 다하여 주께 하듯 하고 사람에게 하듯 하지 말라","설거지, 보고서, 공부, 운전처럼 평범한 일도 주님께 하듯 하면 예배가 됩니다. 누가 보든 보지 않든 같은 마음으로 일하는 것이 믿음입니다.","오늘 해야 하는 일 가운데 '주께 하듯' 해 보고 싶은 일은 무엇인가요?","평범한 일도 주께 하듯 마음을 다하게 하옵소서."],
+["잠언 15:1-4","유순한 대답","1","유순한 대답은 분노를 쉬게 하여도 과격한 말은 노를 격동하느니라","같은 내용도 어떻게 말하느냐에 따라 결과가 달라집니다. 부드러운 대답은 약함이 아니라 지혜입니다.","최근 과격한 말로 후회했던 순간이 있다면, 어떻게 다르게 말할 수 있었을까요?","제 혀에 부드러운 지혜를 주옵소서."],
+["잠언 16:1-9","걸음을 인도하시는 여호와","9","사람이 마음으로 자기의 길을 계획할지라도 그의 걸음을 인도하는 자는 여호와시니라","계획은 성실하게 세우되 결과는 하나님께 맡기라는 말씀입니다. 계획대로 되지 않을 때에도 걸음을 인도하시는 분이 계십니다.","계획대로 되지 않아 답답한 일은 무엇인가요? 그 일을 맡기는 기도를 적어 보세요.","제 걸음을 주님께 맡기고 평안하게 하옵소서."],
+["빌립보서 4:10-13","자족하기를 배웠노니","13","내게 능력 주시는 자 안에서 내가 모든 것을 할 수 있느니라","이 유명한 구절은 무엇이든 이룰 수 있다는 뜻이기 전에, 배고플 때나 넉넉할 때나 자족할 수 있다는 고백입니다. 자족은 배우는 것입니다.","지금 내 형편에서 자족을 배운다면 무엇에 감사할 수 있을까요?","어떤 형편에서도 자족하는 법을 배우게 하옵소서."],
+["디모데전서 6:6-10","자족하는 마음","6","그러나 자족하는 마음이 있으면 경건은 큰 이익이 되느니라","더 가지려는 마음은 끝이 없지만 자족하는 마음은 지금 가진 것을 선물로 보게 합니다. 돈 자체가 아니라 돈을 사랑하는 마음을 경계하라고 하십니다.","요즘 '조금만 더'를 바라며 마음을 빼앗기는 것이 있나요?","가진 것에 감사하는 자족의 마음을 주옵소서."],
+["누가복음 12:13-21","어리석은 부자","15","그들에게 이르시되 삼가 모든 탐심을 물리치라 사람의 생명이 그 소유의 넉넉한 데 있지 아니하니라 하시고","부자는 곳간을 더 크게 짓는 계획만 세웠고 하나님과 이웃은 계획에 없었습니다. 생명은 소유가 아니라 하나님과의 관계에 있습니다.","내 계획표에 하나님과 이웃의 자리는 얼마나 있나요?","소유보다 하나님께 부요한 사람이 되게 하옵소서."],
+["마가복음 4:35-41","잠잠하라 고요하라","39","예수께서 깨어 바람을 꾸짖으시며 바다더러 잠잠하라 고요하라 하시니 바람이 그치고 아주 잔잔하여지더라","주님이 배에 함께 계셔도 풍랑은 올 수 있습니다. 그러나 풍랑보다 크신 주님이 함께 계신다는 사실이 우리를 붙듭니다.","지금 내 삶의 '풍랑'은 무엇인가요? 그 위에 주님의 말씀 '잠잠하라'를 붙들어 보세요.","풍랑 속에서도 함께 계신 주님을 신뢰하게 하옵소서."],
+["마가복음 6:30-34","잠깐 쉬어라","31","이르시되 너희는 따로 한적한 곳에 가서 잠깐 쉬어라 하시니 이는 오고 가는 사람이 많아 음식 먹을 겨를도 없음이라","예수님은 지친 제자들에게 쉬라고 하셨습니다. 쉼은 게으름이 아니라 주님이 주시는 선물입니다.","이번 주에 나를 위한 '잠깐의 쉼'을 언제 가질 수 있을까요?","주님 안에서 참된 쉼을 누리게 하옵소서."],
+["요한복음 6:5-13","보리떡 다섯 개와 물고기 두 마리","9","여기 한 아이가 있어 보리떡 다섯 개와 물고기 두 마리를 가지고 있나이다 그러나 그것이 이 많은 사람에게 얼마나 되겠사옵나이까","턱없이 부족해 보이는 한 아이의 도시락이 주님 손에서 오천 명을 먹였습니다. 내가 가진 작은 것도 주님께 드리면 넉넉해집니다.","'이것으로 무엇을 하겠어'라고 생각했던 나의 작은 것은 무엇인가요?","제 작은 것을 주님 손에 올려 드립니다."],
+["시편 1:1-6","시냇가에 심은 나무","3","그는 시냇가에 심은 나무가 철을 따라 열매를 맺으며 그 잎사귀가 마르지 아니함 같으니 그가 하는 모든 일이 다 형통하리로다","나무는 하루아침에 자라지 않습니다. 날마다 말씀을 묵상하는 사람은 시냇가에 뿌리 내린 나무처럼 계절이 바뀌어도 마르지 않습니다.","말씀 묵상을 꾸준히 이어 가기 위해 나에게 필요한 것은 무엇인가요?","말씀의 시냇가에 뿌리내리게 하옵소서."],
+["시편 139:1-10","나를 아시나이다","1","여호와여 주께서 나를 살펴 보셨으므로 나를 아시나이다","하나님은 내가 앉고 일어서는 것까지 아십니다. 나를 다 아시면서도 여전히 사랑하신다는 것이 복음입니다.","하나님이 나를 다 아신다는 사실이 위로가 되나요, 부담이 되나요? 그 이유는 무엇인가요?","저를 아시고 사랑하시는 주님을 신뢰합니다."],
+["로마서 8:24-28","모든 것이 합력하여 선을","28","우리가 알거니와 하나님을 사랑하는 자 곧 그의 뜻대로 부르심을 입은 자들에게는 모든 것이 합력하여 선을 이루느니라","모든 일이 다 좋다는 말이 아니라, 하나님이 모든 일을 엮어 선을 이루신다는 약속입니다. 기도할 말을 찾지 못할 때 성령께서 대신 간구하십니다.","지금은 이해되지 않지만 하나님이 선으로 엮어 가실 것을 믿고 싶은 일은 무엇인가요?","모든 것을 선으로 이루시는 주님을 신뢰합니다."],
+["로마서 8:35-39","끊을 수 없는 사랑","39","높음이나 깊음이나 다른 어떤 피조물이라도 우리를 우리 주 그리스도 예수 안에 있는 하나님의 사랑에서 끊을 수 없으리라","환난도, 실패도, 내 연약함도 하나님의 사랑을 끊을 수 없습니다. 오늘 이 확신 위에 서서 하루를 시작해 보세요.","내가 하나님의 사랑에서 멀어졌다고 느끼게 하는 것은 무엇인가요?","그 무엇도 끊을 수 없는 주님의 사랑을 믿습니다."],
+["로마서 12:9-16","함께 울고 함께 웃고","15","즐거워하는 자들과 함께 즐거워하고 우는 자들과 함께 울라","남의 기쁨을 진심으로 기뻐하는 것은 생각보다 어렵고, 남의 슬픔에 함께 우는 것은 생각보다 큰 위로가 됩니다.","이번 주 함께 기뻐하거나 함께 울어 줄 사람은 누구인가요?","이웃의 기쁨과 슬픔에 함께하는 마음을 주옵소서."],
+["에베소서 4:25-32","서로 친절하게 하며","32","서로 친절하게 하며 불쌍히 여기며 서로 용서하기를 하나님이 그리스도 안에서 너희를 용서하심과 같이 하라","'해가 지도록 분을 품지 말라'는 말씀은 오늘의 감정을 오늘 다루라는 지혜입니다. 친절은 가장 작은 단위의 사랑입니다.","오늘 해가 지기 전에 풀어야 할 마음이 있나요?","친절하고 불쌍히 여기는 마음을 주옵소서."],
+["히브리서 12:1-3","예수를 바라보자","2","믿음의 주요 또 온전하게 하시는 이인 예수를 바라보자 그는 그 앞에 있는 기쁨을 위하여 십자가를 참으사 부끄러움을 개의치 아니하시더니 하나님 보좌 우편에 앉으셨느니라","믿음의 경주는 단거리가 아니라 마라톤입니다. 지칠 때는 내 발이 아니라 앞서 달리신 예수님을 바라보라고 합니다.","지금 나를 무겁게 하는 짐이나 얽매이기 쉬운 습관은 무엇인가요?","지칠 때 예수님을 바라보며 끝까지 달리게 하옵소서."],
+["갈라디아서 6:2-10","낙심하지 말지니","9","우리가 선을 행하되 낙심하지 말지니 포기하지 아니하면 때가 이르매 거두리라","선한 일을 해도 당장 열매가 보이지 않으면 지치기 쉽습니다. 하나님의 추수 때는 반드시 옵니다.","포기하고 싶었던 선한 일이 있다면 무엇인가요? 오늘 한 걸음만 더 가 보세요.","선을 행하다 낙심하지 않게 하옵소서."],
+["누가복음 18:1-8","항상 기도하고 낙심하지 말라","1","예수께서 그들에게 항상 기도하고 낙심하지 말아야 할 것을 비유로 말씀하여","불의한 재판관도 끈질긴 과부의 청을 들어주었다면, 사랑의 하나님은 얼마나 더 들으시겠습니까. 응답이 더딜 때에도 기도를 멈추지 마세요.","오래 기도했지만 아직 응답을 기다리는 제목은 무엇인가요?","응답이 더딜 때에도 낙심하지 않고 기도하게 하옵소서."],
+["미가 6:6-8","정의와 인자와 겸손","8","사람아 주께서 선한 것이 무엇임을 네게 보이셨나니 여호와께서 네게 구하시는 것은 오직 정의를 행하며 인자를 사랑하며 겸손히 네 하나님과 함께 행하는 것이 아니냐","하나님이 원하시는 것은 거창한 제물이 아니라 정의롭게, 따뜻하게, 겸손하게 사는 삶입니다. 세 가지를 오늘 하루의 점검표로 삼아 보세요.","오늘 정의, 인자, 겸손 가운데 하나를 구체적으로 실천한다면 무엇을 하겠습니까?","정의를 행하고 인자를 사랑하며 겸손히 주와 동행하게 하옵소서."]
+];
+
+/* ===================== 교회력 계산 ===================== */
+const BOOK = {"마태복음":"mat","마가복음":"mrk","누가복음":"luk","요한복음":"jhn","사도행전":"act","로마서":"rom","고린도전서":"1co","갈라디아서":"gal","에베소서":"eph","빌립보서":"php","골로새서":"col","데살로니가전서":"1th","디모데전서":"1ti","디도서":"tit","히브리서":"heb","야고보서":"jas","베드로전서":"1pe","요한일서":"1jn","시편":"psa","잠언":"pro","이사야":"isa","예레미야":"jer","예레미야애가":"lam","요엘":"jol","미가":"mic","스바냐":"zep"};
+const SEASONS = {
+  advent:   {name:"대림절",     color:"보라",       sw:"#6b4fa0"},
+  christmas:{name:"성탄절",     color:"흰색·금색",  sw:"#efe4c6"},
+  epiphany: {name:"주현절",     color:"초록",       sw:"#2f7f6a"},
+  lent:     {name:"사순절",     color:"보라",       sw:"#56406c"},
+  holyweek: {name:"고난주간",   color:"진홍",       sw:"#9d1c2c"},
+  easter:   {name:"부활절",     color:"흰색·금색",  sw:"#e6dcc3"},
+  pentecost:{name:"성령강림절", color:"빨강",       sw:"#c63a22"},
+  ordinary: {name:"성령강림 후",color:"초록",       sw:"#46803c"}
+};
+const WHITE = "#f1ebdc";
+const THEME_ORDER = ["auto","advent","christmas","epiphany","lent","holyweek","easter","pentecost","ordinary"];
+const CANDLE = ["소망","평화","기쁨","사랑"];
+const DOW = ["주일","월요일","화요일","수요일","목요일","금요일","토요일"];
+const DOW1 = ["일","월","화","수","목","금","토"];
+const HOLY_NAMES = ["종려주일","고난주간 월요일","고난주간 화요일","고난주간 수요일","세족 목요일","성금요일","성토요일"];
+
+const pad = n => String(n).padStart(2,"0");
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseYmd = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); };
+const dayNum = d => Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+const fromDayNum = n => { const t = new Date(n*86400000); return new Date(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate()); };
+const addDays = (d,n) => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate()+n); return x; };
+const today = () => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); };
+const isFuture = d => dayNum(d) > dayNum(today());
+const md = d => `${d.getMonth()+1}월 ${d.getDate()}일`;
+const mdw = d => `${md(d)} ${DOW[d.getDay()]}`;
+const fmtTime = (h,m) => `${h<12?"오전":"오후"} ${((h+11)%12)+1}:${pad(m)}`;
+const fmtTimeStr = s => { const [h,m] = s.split(":").map(Number); return fmtTime(h,m); };
+
+function easterDate(y){
+  const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),
+  h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451);
+  const month=Math.floor((h+l-7*m+114)/31), day=((h+l-7*m+114)%31)+1;
+  return new Date(y, month-1, day);
+}
+function advent1(y){ const x = new Date(y,11,25), w = x.getDay(); return addDays(x, -(w===0?7:w) - 21); }
+function thanksKR(y){ const n1 = new Date(y,10,1); return new Date(y,10,1+((7-n1.getDay())%7)+14); }
+
+const litCache = new Map();
+function liturgy(d){
+  const n = dayNum(d);
+  if (litCache.has(n)) return litCache.get(n);
+  const y = d.getFullYear(), w = d.getDay();
+  const A = dayNum(advent1(y)), X = dayNum(new Date(y,11,25)), E = dayNum(easterDate(y));
+  const ash = E-46, palm = E-7, P = E+49, asc = E+39, J6 = dayNum(new Date(y,0,6));
+  const r = {n, dow:w, A};
+  const lentSundays = k => k >= ash+4 ? Math.floor((k-(ash+4))/7)+1 : 0;
+  if (n >= X || n < J6){
+    const xs = n >= X ? X : dayNum(new Date(y-1,11,25));
+    const idx = n - xs;
+    Object.assign(r,{season:"christmas", idx,
+      title: idx===0 ? "성탄절" : idx===6 ? "송구영신" : idx===7 ? "새해 첫날" : `성탄절 제${idx+1}일`,
+      sub: `성탄 12일 가운데 ${idx+1}일째`, count: `주현절까지 ${12-idx}일`});
+  } else if (n >= A){
+    const idx = n - A, wk = Math.floor(idx/7)+1;
+    Object.assign(r,{season:"advent", idx, week:wk, eve: n===X-1,
+      title: n===X-1 ? "성탄 전야" : `대림절 제${wk}주${w===0?" 주일":""}`,
+      sub: `${CANDLE[wk-1]}의 촛불`, count: `성탄절까지 ${X-n}일`});
+  } else if (n < ash){
+    const idx = n - J6, jd = new Date(y,0,6).getDay(), firstSun = J6 + (jd===0 ? 7 : 7-jd);
+    let title;
+    if (idx===0) { title = "주현절"; r.white = true; }
+    else if (n===firstSun) { title = "주님의 수세 주일"; r.white = true; r.baptism = true; }
+    else if (n===ash-3) { title = "산상변모 주일"; r.transfig = true; r.white = true; }
+    else { const wk = n < firstSun ? 0 : Math.floor((n-firstSun)/7)+1; title = wk ? `주현절 후 제${wk}주` : "주현절 주간"; }
+    Object.assign(r,{season:"epiphany", idx, title, sub:"", count:`사순절까지 ${ash-n}일`});
+  } else if (n < palm){
+    const idx = n - ash, firstSun = ash+4, lday = idx+1-lentSundays(n);
+    Object.assign(r,{season:"lent", idx,
+      title: idx===0 ? "재의 수요일" : n < firstSun ? "사순절 첫 주간" : `사순절 제${Math.floor((n-firstSun)/7)+1}주`,
+      sub: w===0 ? "사순절 40일에 세지 않는 작은 부활절" : `40일 가운데 ${lday}일째`,
+      count:`부활절까지 ${E-n}일`});
+  } else if (n < E){
+    const idx = n - palm, lday = (n-ash+1) - lentSundays(n);
+    Object.assign(r,{season:"holyweek", idx, title: HOLY_NAMES[idx],
+      sub: idx===0 ? "고난주간이 시작됩니다" : `40일 가운데 ${lday}일째`, count:`부활절까지 ${E-n}일`});
+    if (idx===5) { r.colorName = "검정 (또는 장식 없음)"; r.sw = "#1d1a1c"; }
+  } else if (n < P){
+    const idx = n - E;
+    Object.assign(r,{season:"easter", idx, asc: n===asc,
+      title: idx===0 ? "부활주일" : n===asc ? "주님 승천일" : `부활절 제${Math.floor(idx/7)+1}주`,
+      sub: `부활 50일 가운데 ${idx+1}일째`, count:`성령강림주일까지 ${P-n}일`});
+  } else if (n === P){
+    Object.assign(r,{season:"pentecost", idx:0, title:"성령강림주일", sub:"부활절로부터 50일째", count:`대림절까지 ${A-n}일`});
+  } else {
+    const idx = n - P, king = A-7, tg = dayNum(thanksKR(y));
+    const wk = n < P+7 ? 0 : Math.floor((n-(P+7))/7)+1;
+    let title;
+    r.prep = n >= king; r.prepIdx = n - king;
+    if (n===tg) { title = "추수감사주일"; r.thanks = true; }
+    else if (n===king) { title = "그리스도 왕 주일"; r.white = true; }
+    else if (r.prep) title = "그리스도 왕 주간";
+    else if (n===P+7) { title = "삼위일체 주일"; r.white = true; }
+    else if (n < P+7) title = "성령강림 주간";
+    else title = `성령강림 후 제${wk}주`;
+    Object.assign(r,{season:"ordinary", idx, title,
+      sub: wk && title.indexOf("제")<0 ? `성령강림 후 제${wk}주` : "", count:`대림절까지 ${A-n}일`});
+  }
+  const S = SEASONS[r.season];
+  if (!r.colorName) r.colorName = r.white ? "흰색" : S.color;
+  if (!r.sw) r.sw = r.white ? WHITE : S.sw;
+  litCache.set(n, r);
+  return r;
+}
+function toEntry(a, tag){ return {r:a[0], t:a[1], kv:a[2], k:a[3], m:a[4], q:a[5], p:a[6], tag}; }
+function readingFor(L){
+  switch (L.season){
+    case "advent": return L.eve ? toEntry(XMAS_EVE,"성탄 전야") : toEntry(ADVENT[Math.min(L.idx, ADVENT.length-1)], `대림절 제${L.week}주 · ${CANDLE[L.week-1]}`);
+    case "christmas": return toEntry(CHRISTMAS[L.idx], "성탄절 12일");
+    case "epiphany": return toEntry(L.idx===0 ? EPI0 : L.transfig ? TRANSFIG : L.baptism ? EPI[0] : EPI[(L.idx-1) % EPI.length], "주현절 · 빛과 부르심");
+    case "lent": return toEntry(L.idx===0 ? ASH : LENT[(L.idx-1) % LENT.length], "사순절 · 돌이킴");
+    case "holyweek": return toEntry(HOLY[L.idx], "고난주간 · 십자가의 길");
+    case "easter": return toEntry(L.idx===0 ? EASTER0 : L.asc ? ASCENSION : EASTER[(L.idx-1) % EASTER.length], "부활절 · 새 생명");
+    case "pentecost": return toEntry(PENTECOST, "성령강림");
+    default:
+      if (L.thanks) return toEntry(THANKS, "추수감사");
+      if (L.prep) return toEntry(PREP[L.prepIdx], "대림 준비 · 깨어 있음");
+      return toEntry(ORD[(L.idx-1) % ORD.length], "성령강림 후 · 일상의 제자도");
+  }
+}
+function parseRef(ref){
+  const m = ref.match(/^(.+?) (\d+):(\d+)(?:-(\d+))?$/);
+  if (!m) return {book:ref, code:"", chap:1, v1:1, v2:1, count:1};
+  const v1 = +m[3], v2 = m[4] ? +m[4] : v1;
+  return {book:m[1], code:BOOK[m[1]]||"", chap:+m[2], v1, v2, count:v2-v1+1};
+}
+const bskUrl = info => `https://www.bskorea.or.kr/bible/korbibReadpage.php?version=GAE&book=${info.code}&chap=${info.chap}&sec=${info.v1}`;
+function churchYear(d){
+  const y = d.getFullYear(), n = dayNum(d);
+  const sy = n >= dayNum(advent1(y)) ? y : y-1;
+  const S = dayNum(advent1(sy)), X = dayNum(new Date(sy,11,25)), J6 = dayNum(new Date(sy+1,0,6)), E = dayNum(easterDate(sy+1)), End = dayNum(advent1(sy+1));
+  return {sy, S, End, segs:[["advent",S,X],["christmas",X,J6],["epiphany",J6,E-46],["lent",E-46,E-7],["holyweek",E-7,E],["easter",E,E+49],["pentecost",E+49,E+50],["ordinary",E+50,End]]};
+}
+
+/* ===================== 상태 · 계정 저장 ===================== */
+const $ = s => document.querySelector(s);
+const LS = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } },
+  del(k){ try { localStorage.removeItem(k); } catch(e){} }
+};
+const DEFAULT_SETTINGS = () => ({alarm:{on:false, time:"06:30", days:[0,1,2,3,4,5,6], wake:false}, reservations:[], theme:""});
+/* mode: loading | cloud | readonly | offline */
+const state = { memos:{}, settings:DEFAULT_SETTINGS(), mode:"loading", reason:"", synced:false, slow:false, me:null, lastSync:0 };
+let sel = today();
+let calMonth = new Date(sel.getFullYear(), sel.getMonth(), 1);
+let theme = LS.get("gn.theme", "advent");            // 첫 화면을 빨리 칠하기 위한 이 기기의 사본
+if (!THEME_ORDER.includes(theme)) theme = "advent";
+let view = LS.get("gn.view", "read");
+if (!["read","note","cal","set"].includes(view)) view = "read";
+let caps = {}, memosCol = null, settingsDoc = null;
+const chains = {};
+let fired = new Set(LS.get("gn.fired", []));        // 이 기기에서 이미 울린 알림 (중복 방지용)
+
+function normSettings(s){
+  const d = DEFAULT_SETTINGS();
+  if (!s || typeof s !== "object") return d;
+  const a = s.alarm || {};
+  return {
+    alarm:{ on:!!a.on, time: /^\d\d:\d\d$/.test(a.time||"") ? a.time : d.alarm.time,
+            days: Array.isArray(a.days) ? a.days.filter(x=>Number.isInteger(x)&&x>=0&&x<7) : d.alarm.days, wake:!!a.wake },
+    reservations: Array.isArray(s.reservations) ? s.reservations.filter(r=>r && typeof r.id==="string" && /^\d{4}-\d\d-\d\d$/.test(r.date) && /^\d\d:\d\d$/.test(r.time)).slice(0,100) : [],
+    theme: THEME_ORDER.includes(s.theme) ? s.theme : ""
+  };
+}
+function queueWrite(key, fn){
+  const p = (chains[key] || Promise.resolve()).catch(()=>{}).then(fn);
+  chains[key] = p;
+  return p;
+}
+const canSave = () => state.mode === "cloud" && !!memosCol;
+function setMode(mode, reason){
+  state.mode = mode; state.reason = reason || "";
+  renderAccount(); renderMemoBox(false); renderArchive();
+}
+/* Firebase (Google 로그인 + Firestore) */
+const FB_VERSION = "10.12.2";
+let fbAuth = null, fbMods = null, unsubs = [];
+function fbCol(fdb, path){
+  const {collection, doc, setDoc, deleteDoc, onSnapshot} = fbMods.fsM;
+  const ref = collection(fdb, path);
+  return {
+    doc: id => { const d = doc(ref, id); return { set: data => setDoc(d, data), delete: () => deleteDoc(d) }; },
+    onSnapshot: (next, err) => onSnapshot(ref, snap => next({docs: snap.docs.map(x => ({id:x.id, exists:true, data:() => x.data()})), metadata: snap.metadata}), err)
+  };
+}
+function fbDoc(fdb, path){
+  const {doc, setDoc, onSnapshot} = fbMods.fsM;
+  const d = doc(fdb, path);
+  return { set: data => setDoc(d, data), onSnapshot: (next, err) => onSnapshot(d, snap => next({exists: snap.exists(), data: () => snap.data()}), err) };
+}
+function stopListeners(){ unsubs.forEach(u => { try { u(); } catch(e){} }); unsubs = []; }
+async function initStore(){
+  let cfg = null;
+  try { cfg = (await import("./firebase-config.js")).firebaseConfig; } catch(e){}
+  if (!cfg || !cfg.apiKey || /여기|YOUR_|REPLACE/i.test(cfg.apiKey)) { setMode("offline", "noconfig"); return; }
+  try {
+    const base = `https://www.gstatic.com/firebasejs/${FB_VERSION}/`;
+    const [appM, authM, fsM] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-auth.js"), import(base + "firebase-firestore.js")]);
+    fbMods = {authM, fsM};
+    const app = appM.initializeApp(cfg);
+    fbAuth = authM.getAuth(app);
+    fbAuth.languageCode = "ko";
+    const fdb = fsM.getFirestore(app);
+    authM.getRedirectResult(fbAuth).catch(loginError);
+    authM.onAuthStateChanged(fbAuth, user => {
+      stopListeners();
+      memosCol = null; settingsDoc = null; state.synced = false; state.slow = false; state.lastSync = 0;
+      if (!user){
+        state.me = null; state.memos = {}; state.settings = DEFAULT_SETTINGS();
+        setMode("offline", "signedout"); renderAll(); return;
+      }
+      state.me = {id:user.uid, name:user.displayName || "", avatarUrl:user.photoURL || "", email:user.email || ""};
+      memosCol = fbCol(fdb, `users/${user.uid}/memos`);
+      settingsDoc = fbDoc(fdb, `users/${user.uid}/meta/settings`);
+      setMode("cloud");
+      const waitTimer = setTimeout(() => { if (!state.synced){ state.slow = true; renderAccount(); } }, 10000);
+      unsubs.push(memosCol.onSnapshot(snap => {
+        const m = {};
+        snap.docs.forEach(d => { m[d.id] = d.data(); });
+        state.memos = m;
+        if (!snap.metadata.fromCache){ state.lastSync = Date.now(); if (!state.synced){ state.synced = true; state.slow = false; clearTimeout(waitTimer); } }
+        renderMemoBox(false); renderCalendar(); renderArchive(); renderAccount();
+      }, err => { clearTimeout(waitTimer); setMode("offline", err && err.code === "permission-denied" ? "rules" : "error"); }));
+      unsubs.push(settingsDoc.onSnapshot(snap => {
+        if (snap.exists){
+          state.settings = normSettings(snap.data());
+          if (state.settings.theme && state.settings.theme !== theme){ theme = state.settings.theme; LS.set("gn.theme", theme); renderHero(); }
+        }
+        renderAlarm(); renderReservations(); renderCalendar();
+      }, () => {}));
+    });
+  } catch(e){ setMode("offline", "error"); }
+}
+const UA = navigator.userAgent || "";
+const IN_KAKAO = /KAKAOTALK/i.test(UA);
+const IN_APP = IN_KAKAO || /NAVER\(inapp|Instagram|FBAN|FBAV|Line\/|DaumApps|everytimeApp/i.test(UA);
+async function login(){
+  if (!fbAuth){ toast(accountHint()); return; }
+  if (IN_APP){ if (mq.matches) setView("set"); toast("이 앱 안의 브라우저에서는 Google 로그인이 막혀 있습니다. 크롬이나 사파리로 열어 주세요."); renderAccount(); return; }
+  const {authM} = fbMods;
+  const provider = new authM.GoogleAuthProvider();
+  provider.setCustomParameters({prompt: "select_account"});
+  try { await authM.signInWithPopup(fbAuth, provider); }
+  catch(err){
+    const c = err && err.code;
+    if (c === "auth/popup-blocked" || c === "auth/operation-not-supported-in-this-environment"){
+      try { await authM.signInWithRedirect(fbAuth, provider); } catch(e){ loginError(e); }
+    } else loginError(err);
+  }
+}
+function loginError(err){
+  const c = err && err.code;
+  if (!c || c === "auth/popup-closed-by-user" || c === "auth/cancelled-popup-request" || c === "auth/user-cancelled") return;
+  if (c === "auth/unauthorized-domain") toast("이 주소가 Firebase 승인된 도메인에 없습니다. 설정 방법 4단계를 확인해 주세요.");
+  else if (c === "auth/network-request-failed") toast("인터넷 연결을 확인한 뒤 다시 시도해 주세요.");
+  else if (c === "auth/operation-not-allowed") toast("Firebase에서 Google 로그인이 켜져 있지 않습니다. 설정 방법 3단계를 확인해 주세요.");
+  else toast("로그인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+}
+async function logout(){
+  saveMemoNow();
+  try { await fbMods.authM.signOut(fbAuth); toast("로그아웃했습니다."); } catch(e){ toast("로그아웃하지 못했습니다."); }
+}
+function handleWriteError(err, retry){
+  const code = err && err.code;
+  if (code === "permission-denied"){
+    $("#saveState").textContent = "저장 권한 오류입니다. Firestore 보안 규칙(설정 방법 5단계)을 확인해 주세요. 쓴 내용은 아직 화면에 남아 있습니다.";
+  } else if (code === "resource-exhausted"){
+    $("#saveState").textContent = "저장 공간이 가득 찼습니다. 오래된 메모를 지운 뒤 다시 저장해 주세요.";
+  } else if (code === "unavailable" && retry){
+    setTimeout(retry, 1200 + Math.random()*800);
+  } else {
+    $("#saveState").textContent = "저장하지 못했습니다. 잠시 후 저장 버튼을 다시 눌러 주세요.";
+  }
+}
+function writeMemo(date, data, isRetry){
+  if (!canSave()) { toast(accountHint()); return Promise.resolve(false); }
+  const empty = !data.text.trim() && !data.done;
+  const clean = {text:data.text, done:!!data.done, updatedAt:data.updatedAt || Date.now()};
+  if (empty) delete state.memos[date]; else state.memos[date] = clean;
+  const ref = memosCol.doc(date);
+  return queueWrite("m"+date, () => empty ? ref.delete() : ref.set(clean)).then(() => {
+    state.lastSync = Date.now(); markSaved(date); renderAccount(); return true;
+  }).catch(err => { handleWriteError(err, isRetry ? null : () => writeMemo(date, data, true)); return false; });
+}
+let settingsTimer = null, warnedSettings = false;
+function persistSettings(){
+  if (!canSave() || !settingsDoc){
+    if (!warnedSettings){ warnedSettings = true; toast("로그인하면 설정이 계정에 저장됩니다. 지금은 이 화면에서만 적용됩니다."); }
+    return;
+  }
+  clearTimeout(settingsTimer);
+  settingsTimer = setTimeout(() => {
+    const data = JSON.parse(JSON.stringify(state.settings));
+    queueWrite("settings", () => settingsDoc.set(data)).then(() => { state.lastSync = Date.now(); renderAccount(); })
+      .catch(err => handleWriteError(err, () => persistSettings()));
+  }, 500);
+}
+function accountHint(){
+  if (state.mode === "loading") return "로그인 상태를 확인하는 중입니다. 잠시만 기다려 주세요.";
+  if (state.reason === "noconfig") return "아직 Firebase 설정이 연결되지 않아 저장할 수 없습니다.";
+  return "메모를 저장하려면 Google 계정으로 로그인해 주세요.";
+}
+function legacyMemos(){
+  const lm = LS.get("gn.memos", null);
+  if (!lm || typeof lm !== "object") return [];
+  return Object.entries(lm).filter(([k,v]) => /^\d{4}-\d\d-\d\d$/.test(k) && v && ((v.text||"").trim() || v.done) && !state.memos[k]);
+}
+function checkMigration(){ return;
+  const items = legacyMemos();
+  $("#migrateBox").hidden = !items.length || !canSave();
+  $("#migrateText").textContent = `이 기기에만 저장돼 있던 예전 메모 ${items.length}개가 있습니다. 계정으로 옮기면 휴대폰과 컴퓨터에서도 볼 수 있습니다.`;
+}
+
+/* ===================== 화면 그리기 ===================== */
+function applyTheme(L){ document.documentElement.dataset.season = theme === "auto" ? L.season : theme; }
+function renderHero(){
+  const L = liturgy(sel);
+  applyTheme(L);
+  $("#hSwatch").style.setProperty("--sw", L.sw);
+  $("#hSeason").textContent = L.title;
+  $("#hSeasonSub").textContent = L.sub || "";
+  const h = $("#hTitle"); h.textContent = "";
+  const em = document.createElement("em"); em.textContent = "의 교회력";
+  h.append(document.createTextNode(`${sel.getFullYear()}년 ${mdw(sel)}`), em);
+  $("#hColor").textContent = `절기 색 · ${L.colorName}`;
+  $("#hCount").textContent = L.count || "";
+  $("#hTheme").textContent = theme === "auto" || theme === L.season ? "" : `화면 색 · ${SEASONS[theme].name} (직접 선택)`;
+  $("#mhSw").style.setProperty("--sw", L.sw);
+  $("#mhText").textContent = `${mdw(sel)} · ${L.title}`;
+
+  const showWreath = L.season==="advent" || L.season==="christmas" || L.prep || theme==="advent";
+  const wreath = $("#wreath");
+  wreath.hidden = !showWreath;
+  if (showWreath){
+    const lit = L.season==="advent" ? (L.eve ? 4 : L.week) : L.season==="christmas" ? 5 : 0;
+    wreath.querySelectorAll(".candle").forEach(c => c.classList.toggle("lit", +c.dataset.n <= lit));
+    let note;
+    if (L.season==="advent") note = L.eve ? "네 촛불이 모두 켜졌습니다. 오늘 밤 그리스도의 촛불을 기다립니다." : `${CANDLE[L.week-1]}의 촛불까지 ${L.week}개가 켜졌습니다.`;
+    else if (L.season==="christmas") note = "가운데 그리스도의 촛불이 켜졌습니다. 성탄을 축하합니다.";
+    else if (L.prep) note = `${mdw(fromDayNum(L.A))}, 첫 촛불(소망)을 켭니다.`;
+    else note = "대림절 네 주일마다 소망, 평화, 기쁨, 사랑의 촛불을 하나씩 켭니다.";
+    $("#wreathNote").textContent = note;
+    wreath.setAttribute("aria-label", `대림절 화환. ${note}`);
+  }
+
+  const cy = churchYear(sel), total = cy.End - cy.S;
+  const bar = $("#ybBar"), labels = $("#ybLabels");
+  bar.textContent = ""; labels.textContent = "";
+  cy.segs.forEach(([key, a, b]) => {
+    const pct = (b-a)/total*100;
+    const seg = document.createElement("span");
+    seg.className = "yb-seg"; seg.style.flex = `${b-a} 1 0`; seg.style.background = SEASONS[key].sw;
+    seg.title = `${SEASONS[key].name} · ${md(fromDayNum(a))}부터`;
+    bar.appendChild(seg);
+    if (pct >= 6.5){
+      const lb = document.createElement("span");
+      lb.textContent = key === "ordinary" ? "성령강림 후 절기" : SEASONS[key].name;
+      lb.style.left = ((a-cy.S)/total*100) + "%";
+      labels.appendChild(lb);
+    }
+  });
+  const pos = Math.min(99.4, Math.max(0.6, (dayNum(sel)-cy.S+0.5)/total*100));
+  $("#ybMark").style.left = pos + "%";
+  bar.setAttribute("aria-label", `교회력 ${cy.sy}–${cy.sy+1}년 가운데 ${md(sel)}의 위치`);
+  const yl = $("#ybLabel"); yl.textContent = "";
+  const b1 = document.createElement("b"); b1.textContent = `교회력 ${cy.sy}–${String(cy.sy+1).slice(2)}`;
+  yl.append(b1, document.createTextNode(` · ${md(fromDayNum(cy.S))} 대림절 첫째 주일에 시작`));
+  const left = cy.End - dayNum(sel);
+  $("#ybNote").textContent = left <= 14 ? `새 교회력까지 ${left}일` : `${dayNum(sel)-cy.S+1}일째`;
+  renderThemeChips();
+}
+function renderThemeChips(){
+  const wrap = $("#themeChips");
+  if (!wrap.childElementCount){
+    THEME_ORDER.forEach(key => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "chip"; b.dataset.theme = key;
+      const bead = document.createElement("i"); bead.className = "bead";
+      if (key === "auto") bead.style.background = "conic-gradient(#6b4fa0 0 25%, #efe4c6 0 40%, #46803c 0 70%, #c63a22 0 80%, #9d1c2c 0)";
+      else bead.style.setProperty("--sw", SEASONS[key].sw);
+      const t = document.createElement("span"); t.textContent = key === "auto" ? "자동" : SEASONS[key].name;
+      const s = document.createElement("small"); s.textContent = key === "auto" ? "교회력 따라" : SEASONS[key].color;
+      b.append(bead, t, s);
+      b.addEventListener("click", () => {
+        theme = key; LS.set("gn.theme", key);
+        state.settings.theme = key;
+        renderHero();
+        if (canSave()) persistSettings();
+      });
+      wrap.appendChild(b);
+    });
+  }
+  wrap.querySelectorAll(".chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.theme === theme)));
+}
+function renderReading(){
+  const L = liturgy(sel), R = readingFor(L), info = parseRef(R.r);
+  const isToday = dayNum(sel) === dayNum(today());
+  $("#selLabel").textContent = `${mdw(sel)}${isToday ? " · 오늘" : ""}`;
+  const dp = $("#datePick"); dp.max = ymd(today()); dp.value = ymd(sel);
+  const nx = $("#nextDay"); nx.disabled = dayNum(sel) >= dayNum(today());
+  nx.title = nx.disabled ? "내일 말씀은 0시에 열립니다" : "다음 날 보기";
+  $("#rEyebrow").textContent = `${isToday ? "오늘의 말씀" : "이날의 말씀"} · ${R.tag}`;
+  $("#rTitle").textContent = R.t;
+  $("#rRef").textContent = R.r;
+  $("#rMeta").textContent = `${info.count}절 · 두 번 읽기 약 ${Math.max(1, Math.round(info.count*2*11/60))}분`;
+  $("#rKey").textContent = R.k;
+  $("#rCite").textContent = `${info.book} ${info.chap}:${R.kv} · 개역개정`;
+  $("#rLink").href = bskUrl(info);
+  $("#rLink").setAttribute("aria-label", `${R.r} 본문 전체 읽기, 새 창`);
+  $("#rMed").textContent = R.m;
+  $("#rQ").textContent = R.q;
+  $("#rPray").textContent = R.p;
+  $("#memoPrompt").textContent = `${R.r} · 적용 질문: ${R.q}`;
+  $("#memoDate").textContent = `${sel.getFullYear()}년 ${mdw(sel)}`;
+  renderUnlock();
+}
+function renderUnlock(){
+  const el = $("#unlockNote");
+  if (dayNum(sel) !== dayNum(today())) { el.textContent = ""; el.hidden = true; return; }
+  const now = new Date(), mid = addDays(today(), 1), ms = mid - now;
+  const h = Math.floor(ms/3600000), m = Math.floor((ms%3600000)/60000);
+  el.hidden = false; el.textContent = "";
+  el.insertAdjacentHTML("afterbegin", '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>');
+  el.append(document.createTextNode(`내일 말씀은 0시에 열립니다 · ${h ? `${h}시간 ` : ""}${m}분 남음`));
+}
+let memoDirty = false, memoDate = null, memoTimer = null;
+function renderMemoBox(force){
+  const key = ymd(sel), ta = $("#memo");
+  const data = state.memos[key] || {};
+  if (force || memoDate !== key || (!memoDirty && document.activeElement !== ta)) {
+    ta.value = data.text || "";
+    memoDate = key; memoDirty = false;
+  }
+  const ok = canSave();
+  ta.readOnly = !ok;
+  ta.placeholder = ok ? "오늘 말씀에서 마음에 남은 것, 적용할 것, 기도 제목을 자유롭게 적어 보세요."
+    : state.mode === "loading" ? "로그인 상태를 확인하는 중입니다…" : "Google 계정으로 로그인하면 메모를 쓸 수 있습니다.";
+  $("#memoSave").disabled = !ok;
+  document.querySelectorAll("[data-insert]").forEach(b => b.disabled = !ok);
+  const done = !!data.done, btn = $("#doneBtn");
+  btn.disabled = !ok;
+  btn.setAttribute("aria-pressed", String(done));
+  btn.textContent = done ? "묵상 마침 ✓" : (dayNum(sel)===dayNum(today()) ? "오늘 묵상 마침" : "이날 묵상 마침");
+  const pill = $("#storeMode");
+  pill.classList.toggle("warn", !ok);
+  pill.textContent = ok ? (state.synced ? "Google 계정에 저장 · 휴대폰·컴퓨터에서 함께 보기" : "계정에 연결하는 중")
+    : state.mode === "loading" ? "로그인 확인 중" : "로그인 필요";
+  if (!memoDirty){
+    const st = $("#saveState");
+    $("#memoLogin").hidden = !(state.mode === "offline" && state.reason === "signedout");
+    if (!ok) st.textContent = state.mode === "loading" ? "로그인 상태를 확인하는 중" : "저장하려면 로그인이 필요합니다";
+    else if (data.updatedAt) { const t = new Date(data.updatedAt); st.textContent = `마지막 저장 · ${t.getMonth()+1}/${t.getDate()} ${fmtTime(t.getHours(), t.getMinutes())}`; }
+    else st.textContent = "아직 적은 메모가 없습니다";
+  }
+}
+function markSaved(date){
+  if (date === ymd(sel) && !memoDirty){
+    const t = new Date();
+    $("#saveState").textContent = `저장했습니다 · ${fmtTime(t.getHours(), t.getMinutes())}`;
+  }
+}
+function saveMemoNow(){
+  clearTimeout(memoTimer);
+  if (!memoDate || !canSave()) return;
+  const prev = state.memos[memoDate] || {};
+  const text = $("#memo").value;
+  if (!memoDirty && (prev.text||"") === text) return;
+  memoDirty = false;
+  writeMemo(memoDate, {text, done: !!prev.done, updatedAt: Date.now()});
+  renderCalendar(); renderArchive();
+}
+function renderCalendar(){
+  const y = calMonth.getFullYear(), m = calMonth.getMonth();
+  $("#calMonthBig").textContent = `${m+1}월`;
+  $("#calYear").textContent = String(y);
+  const wd = $("#calWd");
+  if (!wd.childElementCount) DOW1.forEach(d => { const s = document.createElement("span"); s.textContent = d; wd.appendChild(s); });
+  const grid = $("#calGrid"); grid.textContent = "";
+  const first = new Date(y, m, 1), start = addDays(first, -first.getDay());
+  const tn = dayNum(today()), sn = dayNum(sel);
+  const resv = state.settings.reservations;
+  for (let i=0; i<42; i++){
+    const d = addDays(start, i);
+    if (i >= 35 && d.getMonth() !== m) break;
+    const n = dayNum(d), L = liturgy(d), key = ymd(d), memo = state.memos[key];
+    const hasMemo = !!(memo && (memo.text||"").trim()), done = !!(memo && memo.done);
+    const hasRv = resv.some(r => occursOn(r, d));
+    const prevSw = liturgy(addDays(d,-1)).sw, nextSw = liturgy(addDays(d,1)).sw;
+    const fut = n > tn;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = ["cd", d.getMonth()!==m && "out", d.getDay()===0 && "sun", n===tn && "today", n===sn && "sel",
+      hasMemo && "memo", done && "done", fut && "future", (d.getDay()===0 || prevSw !== L.sw) && "rs", (d.getDay()===6 || nextSw !== L.sw) && "re"].filter(Boolean).join(" ");
+    b.dataset.date = key;
+    b.style.setProperty("--sw", L.sw);
+    const num = document.createElement("span"); num.className = "cd-n tnum"; num.textContent = d.getDate();
+    const mk = document.createElement("span"); mk.className = "cd-mk";
+    const rib = document.createElement("span"); rib.className = "cd-rib";
+    b.append(num, mk, rib);
+    if (hasRv){ const rv = document.createElement("span"); rv.className = "cd-rv"; b.appendChild(rv); }
+    const bits = [mdw(d), L.title];
+    if (fut) bits.push("아직 열리지 않음"); if (hasMemo) bits.push("메모 있음"); if (done) bits.push("묵상 마침"); if (hasRv) bits.push("예약 있음");
+    b.setAttribute("aria-label", bits.join(", "));
+    if (fut) b.setAttribute("aria-disabled", "true");
+    if (n===sn) b.setAttribute("aria-current", "date");
+    grid.appendChild(b);
+  }
+  // 이 달의 절기
+  const last = new Date(y, m+1, 0).getDate(), ranges = [];
+  for (let dd=1; dd<=last; dd++){
+    const s = liturgy(new Date(y, m, dd)).season, r = ranges[ranges.length-1];
+    if (r && r.s === s) r.to = dd; else ranges.push({s, from:dd, to:dd});
+  }
+  const box = $("#calSeasons"); box.textContent = "";
+  ranges.forEach(r => {
+    const sp = document.createElement("span");
+    const sw = document.createElement("i"); sw.className = "sw"; sw.style.setProperty("--sw", SEASONS[r.s].sw);
+    const em = document.createElement("em"); em.textContent = r.from === r.to ? `${r.from}일` : `${r.from}–${r.to}일`;
+    sp.append(sw, document.createTextNode(r.s === "ordinary" ? "성령강림 후" : SEASONS[r.s].name), em);
+    box.appendChild(sp);
+  });
+}
+function memoEntries(){
+  return Object.entries(state.memos).filter(([k,v]) => v && ((v.text||"").trim() || v.done)).sort((a,b) => a[0] < b[0] ? 1 : -1);
+}
+function renderArchive(){
+  const list = $("#arcList"), q = $("#arcSearch").value.trim();
+  const all = memoEntries();
+  const doneCount = all.filter(([,v]) => v.done).length;
+  $("#arcCount").textContent = all.length ? `메모 ${all.length}개 · 묵상 마침 ${doneCount}일` : "";
+  list.textContent = "";
+  if (!all.length){
+    const li = document.createElement("li"); li.className = "empty";
+    li.textContent = state.mode === "loading" ? "저장된 메모를 불러오는 중입니다."
+      : canSave() || state.mode === "readonly" ? "아직 저장한 메모가 없습니다. 묵상 노트에 한 줄을 적으면 여기에서 날짜별로 다시 볼 수 있습니다."
+      : "Google 계정으로 로그인하면 저장한 메모가 날짜별로 여기에 모입니다.";
+    list.appendChild(li); return;
+  }
+  let shown = 0;
+  for (const [key, v] of all){
+    const d = parseYmd(key), L = liturgy(d), R = readingFor(L);
+    if (q && `${v.text||""} ${R.t} ${R.r} ${L.title}`.indexOf(q) < 0) continue;
+    if (++shown > 80) break;
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "memo-item" + (key===ymd(sel) ? " cur":""); b.dataset.date = key;
+    const top = document.createElement("span"); top.className = "mi-top";
+    const sw = document.createElement("i"); sw.className = "sw"; sw.style.setProperty("--sw", L.sw);
+    const dt = document.createElement("b"); dt.textContent = `${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}. (${DOW1[d.getDay()]})`;
+    const lt = document.createElement("span"); lt.className = "muted"; lt.textContent = L.title;
+    top.append(sw, dt, lt);
+    if (v.done){ const dn = document.createElement("span"); dn.className = "mi-done"; dn.textContent = "마침 ✓"; top.appendChild(dn); }
+    const ti = document.createElement("span"); ti.className = "mi-title"; ti.textContent = `${R.r} · ${R.t}`;
+    b.append(top, ti);
+    if ((v.text||"").trim()){ const pv = document.createElement("span"); pv.className = "mi-prev"; pv.textContent = v.text.trim(); b.appendChild(pv); }
+    li.appendChild(b); list.appendChild(li);
+  }
+  if (!shown){ const li = document.createElement("li"); li.className = "empty"; li.textContent = `'${q}'(으)로 찾은 메모가 없습니다.`; list.appendChild(li); }
+}
+function renderAccount(){
+  const me = state.me, name = (me && me.name) || "";
+  const on = canSave() && state.synced;
+  const avatar = me && me.avatarUrl;
+  ["#acctChipImg", "#acctImg"].forEach(sel => { const im = $(sel); if (avatar){ im.src = avatar; im.referrerPolicy = "no-referrer"; im.hidden = false; } else im.hidden = true; });
+  $("#acctChipDot").classList.toggle("on", on);
+  $("#acctChipName").textContent = state.mode === "loading" ? "확인 중" : canSave() ? (name ? `${name}님` : "내 계정") : state.reason === "signedout" ? "Google 로그인" : "로그인 불가";
+  $("#acctName").textContent = canSave() ? (name ? `${name}님의 묵상노트` : "내 묵상노트") : "로그인하지 않았습니다";
+  $("#acctDot").classList.toggle("on", on);
+  let st = state.mode === "loading" ? "확인 중"
+    : canSave() ? (state.synced ? "동기화 완료" : state.slow ? "서버 응답을 기다리는 중" : "연결하는 중")
+    : "로그인 필요";
+  if (canSave() && me && me.email) st = `${me.email} · ${st}`;
+  if (state.lastSync && canSave()){ const t = new Date(state.lastSync); st += ` ${fmtTime(t.getHours(), t.getMinutes())}`; }
+  $("#acctStatus").textContent = st;
+  const notes = {
+    cloud: "Google 계정으로 로그인되어 있습니다. 같은 계정으로 휴대폰, 태블릿, 컴퓨터 어디에서 열어도 메모와 예약, 알림 설정, 화면 색이 그대로 보입니다. 메모는 본인만 볼 수 있습니다.",
+    loading: "로그인 상태를 확인하고 있습니다.",
+    signedout: "Google 계정으로 로그인하면 휴대폰과 컴퓨터 어디서든 같은 메모를 보고 이어서 쓸 수 있습니다. 메모는 본인만 볼 수 있습니다.",
+    noconfig: "아직 Firebase 설정이 연결되지 않았습니다. 설정 방법 6단계대로 firebase-config.js에 값을 넣으면 Google 로그인과 동기화가 켜집니다.",
+    rules: "저장소 접근이 거부되었습니다. Firestore 보안 규칙(설정 방법 5단계)을 확인해 주세요.",
+    error: "로그인 서비스에 연결하지 못했습니다. 인터넷 연결을 확인한 뒤 새로고침해 주세요."
+  };
+  $("#acctNote").textContent = state.mode === "cloud" ? notes.cloud : state.mode === "loading" ? notes.loading : (notes[state.reason] || notes.error);
+  $("#loginBtn").hidden = !(state.mode === "offline" && state.reason === "signedout");
+  $("#logoutBtn").hidden = !canSave();
+  const help = $("#inAppHelp");
+  help.hidden = !(IN_APP && state.mode === "offline" && state.reason === "signedout");
+  if (!help.hidden){
+    $("#inAppText").textContent = IN_KAKAO ? "카카오톡 안에서는 Google 로그인이 막혀 있습니다. 아래 버튼으로 기본 브라우저에서 열어 주세요."
+      : "앱 안의 브라우저에서는 Google 로그인이 막혀 있습니다. 오른쪽 위 메뉴에서 '다른 브라우저로 열기'를 눌러 크롬이나 사파리로 열어 주세요.";
+    const k = $("#kakaoOpen");
+    k.hidden = !IN_KAKAO;
+    if (IN_KAKAO) k.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href);
+  }
+}
+function occursOn(r, day){
+  const b = parseYmd(r.date);
+  if (r.repeat === "weekly") return dayNum(day) >= dayNum(b) && day.getDay() === b.getDay();
+  return dayNum(day) === dayNum(b);
+}
+function occurrenceAt(r, day){ const [h,m] = r.time.split(":").map(Number); return new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, m); }
+function nextOccurrence(r, from){
+  const b = parseYmd(r.date), first = occurrenceAt(r, b);
+  if (r.repeat !== "weekly" || first >= from) return first;
+  const d = occurrenceAt(r, from);
+  d.setDate(d.getDate() + ((b.getDay() - d.getDay() + 7) % 7));
+  if (d < from) d.setDate(d.getDate() + 7);
+  return d;
+}
+function relTime(ms){
+  const min = Math.round(ms/60000);
+  if (min < 1) return "곧";
+  if (min < 60) return `${min}분 후`;
+  const h = Math.floor(min/60), mm = min%60;
+  if (h < 24) return mm ? `${h}시간 ${mm}분 후` : `${h}시간 후`;
+  const days = Math.round(ms/86400000);
+  return days === 1 ? "내일" : `${days}일 후`;
+}
+function gcalUrl({title, details, start, minutes, rrule}){
+  const f = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+  const end = new Date(start.getTime() + minutes*60000);
+  let tz = "Asia/Seoul"; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || tz; } catch(e){}
+  const p = new URLSearchParams({action:"TEMPLATE", text:title, details, dates:`${f(start)}/${f(end)}`, ctz:tz});
+  if (rrule) p.set("recur", "RRULE:" + rrule);
+  return "https://calendar.google.com/calendar/render?" + p.toString();
+}
+function renderReservations(){
+  const list = $("#rvList"), past = $("#rvPast"), now = new Date();
+  list.textContent = ""; past.textContent = "";
+  const items = state.settings.reservations.map(r => ({r, next: nextOccurrence(r, new Date(now.getTime() - 10*60000))}));
+  const upcoming = items.filter(x => x.r.repeat === "weekly" || x.next.getTime() > now.getTime() - 10*60000).sort((a,b) => a.next - b.next);
+  const gone = items.filter(x => !upcoming.includes(x)).sort((a,b) => b.next - a.next);
+  if (!upcoming.length){
+    const li = document.createElement("li"); li.className = "empty";
+    li.textContent = "예약한 묵상 시간이 없습니다. 위에서 날짜와 시간을 정해 추가해 보세요. 예약한 날은 달력에 주황 점으로 표시됩니다.";
+    list.appendChild(li);
+  }
+  const build = ({r, next}, isPast) => {
+    const li = document.createElement("li"); li.className = "resv" + (isPast ? " past":"");
+    const top = document.createElement("div"); top.className = "resv-top";
+    const when = document.createElement("span"); when.className = "resv-when";
+    when.textContent = r.repeat === "weekly" ? `매주 ${DOW[parseYmd(r.date).getDay()]} ${fmtTimeStr(r.time)}` : `${mdw(next)} ${fmtTimeStr(r.time)}`;
+    top.appendChild(when);
+    if (!isPast){ const rel = document.createElement("span"); rel.className = "resv-rel"; rel.textContent = r.repeat==="weekly" ? `다음 ${md(next)} · ${relTime(next - now)}` : relTime(next - now); top.appendChild(rel); }
+    const label = document.createElement("span"); label.className = "resv-label"; label.textContent = r.label || "말씀 묵상";
+    const fut = isFuture(next);
+    const R = readingFor(liturgy(next));
+    const rd = document.createElement("span"); rd.className = "resv-read";
+    rd.textContent = fut ? "그날 말씀은 당일 0시에 열립니다" : `그날 본문 · ${R.r} 「${R.t}」`;
+    const acts = document.createElement("div"); acts.className = "resv-actions";
+    if (!fut){ const go = document.createElement("button"); go.type = "button"; go.className = "btn btn-sm"; go.textContent = "그날 본문 보기"; go.dataset.goto = ymd(next); acts.appendChild(go); }
+    const cal = document.createElement("a"); cal.className = "btn btn-sm"; cal.target = "_blank"; cal.rel = "noopener"; cal.textContent = "캘린더에 추가 ↗";
+    cal.href = gcalUrl({title: r.label || "말씀 묵상", details: "성경묵상노트에서 그날의 말씀을 읽어 보세요.", start: next, minutes: 20, rrule: r.repeat==="weekly" ? `FREQ=WEEKLY;BYDAY=${["SU","MO","TU","WE","TH","FR","SA"][next.getDay()]}` : ""});
+    const del = document.createElement("button"); del.type = "button"; del.className = "btn btn-sm"; del.textContent = "삭제"; del.dataset.del = r.id;
+    del.setAttribute("aria-label", `${when.textContent} 예약 삭제`);
+    acts.append(cal, del);
+    li.append(top, label, rd, acts);
+    return li;
+  };
+  upcoming.forEach(x => list.appendChild(build(x, false)));
+  $("#rvPastWrap").hidden = !gone.length;
+  $("#rvPastSum").textContent = `지난 예약 ${gone.length}개`;
+  gone.forEach(x => past.appendChild(build(x, true)));
+}
+function nextDailyAlarm(now){
+  const a = state.settings.alarm;
+  if (!a.on || !a.days.length) return null;
+  const [h,m] = a.time.split(":").map(Number);
+  for (let i=0; i<8; i++){
+    const d = addDays(now, i); d.setHours(h, m, 0, 0);
+    if (a.days.includes(d.getDay()) && d > now) return d;
+  }
+  return null;
+}
+function renderAlarm(){
+  const a = state.settings.alarm;
+  $("#alOn").checked = a.on;
+  if (document.activeElement !== $("#alTime")) $("#alTime").value = a.time;
+  $("#alWake").checked = a.wake && !!wakeLock;
+  const days = $("#alDays");
+  if (!days.childElementCount) DOW1.forEach((d,i) => { const b = document.createElement("button"); b.type = "button"; b.textContent = d; b.dataset.day = i; b.setAttribute("aria-label", DOW[i]); days.appendChild(b); });
+  days.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(a.days.includes(+b.dataset.day))));
+  const now = new Date(), nx = nextDailyAlarm(now), el = $("#alNext");
+  if (!a.on) el.textContent = `매일 알림이 꺼져 있습니다. 켜면 ${fmtTimeStr(a.time)}에 알려 드립니다.`;
+  else if (!a.days.length) el.textContent = "알림 받을 요일을 하나 이상 골라 주세요.";
+  else if (nx) el.textContent = `다음 알림 · ${mdw(nx)} ${fmtTime(nx.getHours(), nx.getMinutes())} (${relTime(nx - now)})`;
+  const [h,m] = a.time.split(":").map(Number);
+  let start = new Date(); start.setHours(h, m, 0, 0);
+  if (start <= new Date()) { start = addDays(start, 1); start.setHours(h, m, 0, 0); }
+  const all = a.days.length === 7 || !a.days.length;
+  const byday = a.days.slice().sort().map(i => ["SU","MO","TU","WE","TH","FR","SA"][i]).join(",");
+  $("#alGcal").href = gcalUrl({title:"말씀 묵상 시간", details:"성경묵상노트에서 오늘의 말씀을 읽고 묵상 노트를 적어 보세요.", start, minutes:15, rrule: all ? "FREQ=DAILY" : `FREQ=WEEKLY;BYDAY=${byday}`});
+  const perm = $("#alPerm");
+  if (!("Notification" in window)) perm.hidden = true;
+  else {
+    const p = Notification.permission;
+    perm.textContent = p === "granted" ? "브라우저 알림 켜짐" : p === "denied" ? "브라우저 알림이 차단됨" : "브라우저 알림 허용";
+    perm.disabled = p !== "default";
+  }
+}
+function renderAll(){ renderHero(); renderReading(); renderMemoBox(false); renderCalendar(); renderArchive(); renderReservations(); renderAlarm(); renderAccount(); }
+
+/* ===================== 휴대폰 탭 ===================== */
+const mq = matchMedia("(max-width: 759px)");
+function applyView(){
+  const mobile = mq.matches;
+  document.querySelectorAll("[data-pane]").forEach(el => { el.hidden = mobile && !el.dataset.pane.split(" ").includes(view); });
+  document.querySelectorAll("#tabbar button").forEach(b => { if (b.dataset.view === view) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+}
+function setView(v){ view = v; LS.set("gn.view", v); applyView(); window.scrollTo(0, 0); }
+(mq.addEventListener ? mq.addEventListener("change", applyView) : mq.addListener(applyView));
+
+function selectDate(d, opts={}){
+  if (isFuture(d)) { toast("아직 열리지 않은 날입니다. 그날 0시에 말씀이 열립니다."); return; }
+  saveMemoNow();
+  sel = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  if (opts.calFollow !== false) calMonth = new Date(sel.getFullYear(), sel.getMonth(), 1);
+  renderHero(); renderReading(); renderMemoBox(true); renderCalendar(); renderArchive();
+  if (opts.view && mq.matches) setView(opts.view);
+  else if (opts.scroll) document.querySelector(".reading").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start"});
+}
+
+/* ===================== 알림 ===================== */
+let actx = null;
+function ensureAudio(){
+  try {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === "suspended") actx.resume();
+  } catch(e){}
+}
+function chime(){
+  if (!actx) return;
+  const t0 = actx.currentTime + 0.05;
+  [[659.25,0],[987.77,0.42],[1318.5,0.84]].forEach(([f,dt]) => {
+    [[f,0.22],[f*2.76,0.05]].forEach(([freq,vol]) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = "sine"; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, t0+dt);
+      g.gain.exponentialRampToValueAtTime(vol, t0+dt+0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0+dt+2.2);
+      o.connect(g); g.connect(actx.destination);
+      o.start(t0+dt); o.stop(t0+dt+2.3);
+    });
+  });
+}
+let ringDate = null, swReg = null;
+function notify(title, body){
+  try {
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+    if (swReg && swReg.showNotification) swReg.showNotification(title, {body, icon:"icons/icon-192.png", badge:"icons/icon-192.png", tag:"bible-note"});
+    else new Notification(title, {body, icon:"icons/icon-192.png"});
+  } catch(e){}
+}
+function ring(kind, label, when){
+  const d = new Date(when.getFullYear(), when.getMonth(), when.getDate());
+  const R = readingFor(liturgy(d));
+  ringDate = d;
+  $("#abK").textContent = kind === "daily" ? `매일 묵상 알림 · ${fmtTime(when.getHours(), when.getMinutes())}` : `묵상 예약 · ${fmtTime(when.getHours(), when.getMinutes())}`;
+  $("#abT").textContent = kind === "daily" ? "말씀 앞에 머무를 시간입니다" : (label || "예약한 묵상 시간입니다");
+  $("#abB").textContent = `${R.r} 「${R.t}」`;
+  $("#alarmBanner").hidden = false;
+  chime(); setTimeout(chime, 3200);
+  try { navigator.vibrate && navigator.vibrate([200,120,200]); } catch(e){}
+  notify($("#abT").textContent, $("#abB").textContent);
+}
+function checkAlarms(now){
+  const a = state.settings.alarm;
+  if (a.on && a.days.includes(now.getDay())){
+    const [h,m] = a.time.split(":").map(Number);
+    const t = new Date(now); t.setHours(h, m, 0, 0);
+    const key = `d:${ymd(now)}:${a.time}`;
+    if (now >= t && now - t < 5*60000 && !fired.has(key)) { fired.add(key); saveFired(); ring("daily", "", t); }
+  }
+  state.settings.reservations.forEach(r => {
+    if (!occursOn(r, now)) return;
+    const t = occurrenceAt(r, now), key = `r:${r.id}:${ymd(now)}`;
+    if (now >= t && now - t < 10*60000 && !fired.has(key)) { fired.add(key); saveFired(); ring("resv", r.label, t); }
+  });
+}
+function saveFired(){ const arr = [...fired].slice(-60); fired = new Set(arr); LS.set("gn.fired", arr); }
+let wakeLock = null;
+async function setWake(on){
+  if (!on){ try { wakeLock && await wakeLock.release(); } catch(e){} wakeLock = null; return true; }
+  if (!("wakeLock" in navigator)) return false;
+  try { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; $("#alWake").checked = false; }); return true; }
+  catch(e){ wakeLock = null; return false; }
+}
+
+/* ===================== 내보내기 ===================== */
+function exportText(){
+  const lines = [`성경묵상노트 · ${ymd(today())} 내보냄`, ""];
+  memoEntries().forEach(([key, v]) => {
+    const d = parseYmd(key), L = liturgy(d), R = readingFor(L);
+    lines.push("────────────────────");
+    lines.push(`${d.getFullYear()}년 ${mdw(d)} · ${L.title}${v.done ? " · 묵상 마침" : ""}`);
+    lines.push(`본문: ${R.r} 「${R.t}」`);
+    if ((v.text||"").trim()) { lines.push(""); lines.push(v.text.trim()); }
+    lines.push("");
+  });
+  return lines.join("\n");
+}
+let toastTimer = null;
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2800);
+}
+function showCopyBox(){ const box = $("#copyBox"); box.value = exportText(); box.hidden = false; box.focus(); box.select(); }
+
+/* ===================== 이벤트 ===================== */
+document.addEventListener("pointerdown", ensureAudio, {passive:true});
+document.addEventListener("keydown", ensureAudio);
+$("#tabbar").addEventListener("click", e => { const b = e.target.closest("button[data-view]"); if (b) setView(b.dataset.view); });
+$("#acctChip").addEventListener("click", () => {
+  if (state.mode === "offline" && state.reason === "signedout" && !IN_APP) { login(); return; }
+  if (mq.matches) setView("set"); else $("#acctPanel").scrollIntoView({behavior:"smooth", block:"center"});
+});
+$("#loginBtn").addEventListener("click", login);
+$("#memoLogin").addEventListener("click", login);
+$("#logoutBtn").addEventListener("click", logout);
+$("#prevDay").addEventListener("click", () => selectDate(addDays(sel,-1)));
+$("#nextDay").addEventListener("click", () => selectDate(addDays(sel,1)));
+$("#todayBtn").addEventListener("click", () => selectDate(today()));
+$("#datePick").addEventListener("change", e => {
+  if (!e.target.value) return;
+  const d = parseYmd(e.target.value);
+  if (isFuture(d)) { e.target.value = ymd(sel); toast("아직 열리지 않은 날입니다. 그날 0시에 말씀이 열립니다."); return; }
+  selectDate(d);
+});
+$("#calPrev").addEventListener("click", () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()-1, 1); renderCalendar(); });
+$("#calNext").addEventListener("click", () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 1); renderCalendar(); });
+$("#calGrid").addEventListener("click", e => {
+  const b = e.target.closest(".cd"); if (!b) return;
+  const d = parseYmd(b.dataset.date);
+  if (isFuture(d)) { toast(`${mdw(d)} 말씀은 그날 0시에 열립니다.`); return; }
+  selectDate(d, {calFollow:false, view:"read"});
+});
+$("#arcList").addEventListener("click", e => { const b = e.target.closest(".memo-item"); if (b) selectDate(parseYmd(b.dataset.date), {scroll:true, view:"note"}); });
+$("#arcSearch").addEventListener("input", renderArchive);
+$("#memo").addEventListener("input", () => {
+  if (!canSave()) return;
+  memoDirty = true; $("#saveState").textContent = "작성 중…";
+  clearTimeout(memoTimer); memoTimer = setTimeout(saveMemoNow, 900);
+});
+$("#memo").addEventListener("focus", () => { if (!canSave()) toast(accountHint()); });
+$("#memo").addEventListener("blur", saveMemoNow);
+$("#memoSave").addEventListener("click", () => { memoDirty = true; saveMemoNow(); });
+document.querySelectorAll("[data-insert]").forEach(b => b.addEventListener("click", () => {
+  if (!canSave()) return;
+  const ta = $("#memo"), ins = b.dataset.insert;
+  const before = ta.value && !ta.value.endsWith("\n") ? "\n" : "";
+  ta.value = ta.value + before + ins;
+  ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+  ta.dispatchEvent(new Event("input"));
+}));
+$("#doneBtn").addEventListener("click", () => {
+  if (!canSave()) { toast(accountHint()); return; }
+  const key = ymd(sel), prev = state.memos[key] || {};
+  memoDate = key; memoDirty = false; clearTimeout(memoTimer);
+  const done = !prev.done;
+  writeMemo(key, {text: $("#memo").value, done, updatedAt: Date.now()});
+  renderMemoBox(false); renderCalendar(); renderArchive();
+  toast(done ? "묵상을 마친 날로 표시했습니다." : "묵상 마침 표시를 지웠습니다.");
+});
+if (false) $("#migrateBtn").addEventListener("click", async () => {
+  const items = legacyMemos();
+  $("#migrateBtn").disabled = true;
+  let ok = 0;
+  for (const [k, v] of items){ if (await writeMemo(k, {text: v.text||"", done: !!v.done, updatedAt: v.updatedAt || Date.now()})) ok++; }
+  if (ok === items.length){ LS.del("gn.memos"); LS.del("gn.settings"); }
+  $("#migrateBtn").disabled = false;
+  checkMigration();
+  toast(`메모 ${ok}개를 계정으로 옮겼습니다.`);
+});
+$("#exportTxt").addEventListener("click", () => {
+  if (!memoEntries().length) { toast("내보낼 메모가 아직 없습니다."); return; }
+  try {
+    const blob = new Blob([exportText()], {type:"text/plain;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = `묵상노트_${ymd(today())}.txt`;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    toast("텍스트 파일로 저장했습니다.");
+  } catch(e){ showCopyBox(); toast("파일로 저장하지 못해 아래에 전체 내용을 펼쳤습니다."); }
+});
+$("#copyAll").addEventListener("click", () => {
+  if (!memoEntries().length) { toast("복사할 메모가 아직 없습니다."); return; }
+  const text = exportText();
+  try {
+    navigator.clipboard.writeText(text).then(() => toast("메모 전체를 복사했습니다."), () => { showCopyBox(); toast("복사가 막혀 있어 아래에서 직접 선택해 복사해 주세요."); });
+  } catch(e){ showCopyBox(); toast("아래에서 직접 선택해 복사해 주세요."); }
+});
+$("#rvForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const date = $("#rvDate").value, time = $("#rvTime").value;
+  if (!date || !time) { toast("날짜와 시간을 모두 정해 주세요."); return; }
+  const r = {id: "r" + Date.now().toString(36) + Math.random().toString(36).slice(2,6), date, time, label: $("#rvLabel").value.trim().slice(0,60), repeat: $("#rvRepeat").value, created: Date.now()};
+  if (r.repeat === "once" && occurrenceAt(r, parseYmd(date)) < new Date()) { toast("이미 지난 시간입니다. 앞으로의 날짜나 시간을 골라 주세요."); return; }
+  state.settings.reservations = [...state.settings.reservations, r].slice(-100);
+  persistSettings(); renderReservations(); renderCalendar();
+  $("#rvLabel").value = "";
+  toast(`${mdw(parseYmd(date))} ${fmtTimeStr(time)} 묵상을 예약했습니다.`);
+});
+document.querySelector(".col-side").addEventListener("click", e => {
+  const del = e.target.closest("[data-del]");
+  if (del) {
+    state.settings.reservations = state.settings.reservations.filter(r => r.id !== del.dataset.del);
+    persistSettings(); renderReservations(); renderCalendar(); toast("예약을 지웠습니다."); return;
+  }
+  const go = e.target.closest("[data-goto]");
+  if (go) selectDate(parseYmd(go.dataset.goto), {scroll:true, view:"read"});
+});
+$("#alOn").addEventListener("change", e => { state.settings.alarm.on = e.target.checked; persistSettings(); renderAlarm(); if (e.target.checked) { ensureAudio(); toast(`매일 ${fmtTimeStr(state.settings.alarm.time)}에 알려 드립니다.`); } });
+$("#alTime").addEventListener("change", e => { if (/^\d\d:\d\d$/.test(e.target.value)) { state.settings.alarm.time = e.target.value; persistSettings(); renderAlarm(); } });
+$("#alDays").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const i = +b.dataset.day, days = new Set(state.settings.alarm.days);
+  days.has(i) ? days.delete(i) : days.add(i);
+  state.settings.alarm.days = [...days].sort(); persistSettings(); renderAlarm();
+});
+$("#alTest").addEventListener("click", () => { ensureAudio(); chime(); });
+$("#alPerm").addEventListener("click", async () => {
+  try { const p = await Notification.requestPermission(); toast(p === "granted" ? "브라우저 알림을 켰습니다." : "이 화면에서는 브라우저 알림을 쓸 수 없습니다. 종소리와 화면 알림으로 알려 드립니다."); }
+  catch(e){ toast("이 화면에서는 브라우저 알림을 쓸 수 없습니다. 종소리와 화면 알림으로 알려 드립니다."); }
+  renderAlarm();
+});
+$("#alWake").addEventListener("change", async e => {
+  const ok = await setWake(e.target.checked);
+  if (e.target.checked && !ok) { e.target.checked = false; toast("이 기기에서는 화면 켜두기를 쓸 수 없습니다."); }
+  state.settings.alarm.wake = e.target.checked; persistSettings();
+});
+$("#abGo").addEventListener("click", () => { $("#alarmBanner").hidden = true; if (ringDate) selectDate(ringDate, {scroll:true, view:"read"}); });
+$("#abClose").addEventListener("click", () => { $("#alarmBanner").hidden = true; });
+document.addEventListener("keydown", e => { if (e.key === "Escape") $("#alarmBanner").hidden = true; });
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") { checkAlarms(new Date()); if (state.settings.alarm.wake && !wakeLock) setWake(true); }
+  else saveMemoNow();
+});
+window.addEventListener("pagehide", saveMemoNow);
+
+/* ===================== 시계 · 0시 전환 ===================== */
+let lastToday = dayNum(today());
+function tick(){
+  const now = new Date();
+  $("#clockDate").textContent = `${now.getFullYear()}. ${now.getMonth()+1}. ${now.getDate()}. (${DOW1[now.getDay()]})`;
+  $("#clockTime").textContent = `${now.getHours()<12?"오전":"오후"} ${((now.getHours()+11)%12)+1}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  const tn = dayNum(now);
+  if (tn !== lastToday){
+    const wasToday = dayNum(sel) === lastToday;
+    lastToday = tn;
+    if (wasToday) { selectDate(today()); toast("0시가 지나 새 날의 말씀이 열렸습니다."); }
+    else { renderReading(); renderCalendar(); }
+  }
+  if (now.getSeconds() % 15 === 0) checkAlarms(now);
+  if (now.getSeconds() === 0) { renderUnlock(); renderAlarm(); renderReservations(); }
+}
+
+/* ===================== 시작 ===================== */
+(function start(){
+  const t = today(), A = advent1(t.getFullYear());
+  const defaultRv = dayNum(A) > dayNum(t) && dayNum(A) - dayNum(t) <= 30 ? A : addDays(t, 1);
+  $("#rvDate").value = ymd(defaultRv);
+  $("#rvDate").min = ymd(t);
+  applyView();
+  renderAll();
+  tick(); setInterval(tick, 1000);
+  initStore();
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").then(r => { swReg = r; }).catch(() => {});
+  window.__app = {liturgy, readingFor, parseYmd, ymd, state};
+})();
+</script>
+</body>
+</html>

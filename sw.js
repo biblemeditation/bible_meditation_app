@@ -1,5 +1,5 @@
 // 성경묵상노트 서비스 워커: 홈 화면 앱 설치, 오프라인 화면, 알림 클릭 처리
-const CACHE = "bible-note-v4";
+const CACHE = "bible-note-v5";
 const SHELL = ["./", "./index.html", "./firebase-config.js", "./readings.json", "./lectionary.json", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

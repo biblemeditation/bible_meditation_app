@@ -427,7 +427,7 @@ main.wrap{padding-top:28px;padding-bottom:64px}
 .ab-k{font-size:12px;letter-spacing:.14em;color:var(--accent)}
 .ab-t{margin:4px 0 2px;font-family:var(--f-display);font-size:20px;font-weight:700}
 .ab-b{margin:0 0 12px;font-size:14px;color:var(--muted)}
-.reader{position:fixed;inset:0;z-index:70;display:grid;place-items:center}
+.reader{position:fixed;inset:0;z-index:70;display:grid;place-items:center;overflow:hidden}
 .reader-backdrop{position:absolute;inset:0;background:rgba(40,34,30,.42)}
 .reader-sheet{position:relative;display:flex;flex-direction:column;width:min(760px,calc(100% - 32px));height:min(86vh,900px);border-radius:var(--r-card);background:var(--surface-2);box-shadow:var(--shadow);overflow:hidden;animation:pop .2s ease-out}
 :root[data-style="ink"] .reader-sheet{border-radius:16px}
@@ -435,10 +435,11 @@ main.wrap{padding-top:28px;padding-bottom:64px}
 .reader-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 12px 22px;border-bottom:1px solid var(--line-2)}
 .reader-k{margin:0;font-size:12px;color:var(--muted)}
 .reader-head h2{margin:2px 0 0;font-family:var(--f-display);font-size:20px}
-.reader-x{width:44px;height:44px;border-radius:22px;border:1px solid var(--line);background:transparent;display:grid;place-items:center;color:var(--fg);flex:none}
+.reader-x{width:46px;height:46px;border-radius:23px;border:1px solid var(--line);background:var(--surface-2);display:grid;place-items:center;color:var(--fg);flex:none}
 .reader-x svg{width:20px;height:20px}
-.reader-body{position:relative;flex:1;background:#fff}
-.reader-body iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.reader-body{position:relative;flex:1;min-height:0;background:#fff;overflow:hidden}
+.reader-body iframe{position:absolute;left:0;top:0;width:100%;height:100%;border:0}
+.reader-close-bar{display:none}
 .reader-loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:14px}
 .reader-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 18px;font-size:12px;color:var(--muted);border-top:1px solid var(--line-2)}
 .reader-foot a{color:var(--accent)}
@@ -482,7 +483,13 @@ main.wrap{padding-top:28px;padding-bottom:64px}
   :root[data-style="pencil"] .tabbar button{font-family:var(--f-hand);font-size:17px}
   :root[data-style="pencil"] .tabbar button[aria-current="page"]{box-shadow:inset 0 0 0 1.5px var(--accent);border-radius:50%}
   .toast{bottom:calc(92px + env(safe-area-inset-bottom))}
-  .reader-sheet{width:100%;height:100%;border-radius:0!important}
+  .reader-sheet{width:100%;height:100%;border-radius:0!important;padding-top:env(safe-area-inset-top)}
+  .reader-head{padding:10px 12px 10px 18px}
+  .reader-head h2{font-size:18px}
+  .reader-x{width:50px;height:50px;border-radius:25px}
+  .reader-foot{display:none}
+  .reader-close-bar{display:flex;gap:10px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line-2);background:var(--surface-2)}
+  .reader-close-bar .btn{flex:1;min-height:50px;font-size:15px}
 }
 @media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
 </style>
@@ -768,10 +775,11 @@ main.wrap{padding-top:28px;padding-bottom:64px}
       <div><p class="reader-k" id="readerK">개역개정 본문</p><h2 id="readerTitle"></h2></div>
       <button class="reader-x" id="readerClose" type="button" aria-label="본문 닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </header>
-    <div class="reader-body">
+    <div class="reader-body" id="readerBody">
       <div class="reader-loading" id="readerLoading">본문을 불러오는 중입니다…</div>
       <iframe id="readerFrame" title="개역개정 성경 본문" referrerpolicy="no-referrer"></iframe>
     </div>
+    <div class="reader-close-bar"><a class="btn" id="readerExt2" target="_blank" rel="noopener">새 창에서 보기</a><button class="btn btn-primary" type="button" data-close>닫기</button></div>
     <footer class="reader-foot"><span>성경 본문 · 대한성서공회 개역개정</span><a id="readerExt" target="_blank" rel="noopener">본문이 보이지 않으면 새 창에서 열기 ↗</a></footer>
   </div>
 </div>
@@ -1068,6 +1076,10 @@ async function initStore(){
     const base = `https://www.gstatic.com/firebasejs/${FB_VERSION}/`;
     const [appM, authM, fsM] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-auth.js"), import(base + "firebase-firestore.js")]);
     fbMods = {authM, fsM};
+    // 로그인 창(구글)에 미리 연결해 두면 버튼을 눌렀을 때 조금 더 빨리 뜹니다
+    ["https://" + cfg.authDomain, "https://accounts.google.com", "https://apis.google.com"].forEach(h => {
+      const l = document.createElement("link"); l.rel = "preconnect"; l.href = h; l.crossOrigin = ""; document.head.appendChild(l);
+    });
     const app = appM.initializeApp(cfg);
     fbAuth = authM.getAuth(app);
     fbAuth.languageCode = "ko";
@@ -1106,19 +1118,31 @@ async function initStore(){
 const UA = navigator.userAgent || "";
 const IN_KAKAO = /KAKAOTALK/i.test(UA);
 const IN_APP = IN_KAKAO || /NAVER\(inapp|Instagram|FBAN|FBAV|Line\/|DaumApps|everytimeApp/i.test(UA);
+// 홈 화면에 둔 앱: 로그인을 앱 안에서 이동(redirect)하면 돌아오지 못하거나 느려서,
+// 항상 로그인 창(안드로이드는 크롬 창, 아이폰은 사파리 창)으로 열고 끝나면 앱으로 돌아옵니다.
+const STANDALONE = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+const IS_ANDROID = /Android/i.test(UA);
+let loginBusy = false;
 async function login(){
   if (!fbAuth){ toast(accountHint()); return; }
   if (IN_APP){ setView("set"); toast("이 앱 안의 브라우저에서는 Google 로그인이 막혀 있습니다. 크롬이나 사파리로 열어 주세요."); renderAccount(); return; }
+  if (loginBusy) return;
+  loginBusy = true;
   const {authM} = fbMods;
   const provider = new authM.GoogleAuthProvider();
-  provider.setCustomParameters({prompt: "select_account"});
-  try { await authM.signInWithPopup(fbAuth, provider); }
-  catch(err){
+  if (LS.get("gn.pickAccount", false)) provider.setCustomParameters({prompt: "select_account"});
+  if (STANDALONE) toast(IS_ANDROID ? "크롬 창에서 계정을 고르면 앱으로 돌아와요." : "로그인 창에서 계정을 고르면 앱으로 돌아와요.");
+  try {
+    await authM.signInWithPopup(fbAuth, provider);
+    LS.del("gn.pickAccount");
+    toast("로그인했어요.");
+  } catch(err){
     const c = err && err.code;
-    if (c === "auth/popup-blocked" || c === "auth/operation-not-supported-in-this-environment"){
+    if (!STANDALONE && (c === "auth/popup-blocked" || c === "auth/operation-not-supported-in-this-environment")){
       try { await authM.signInWithRedirect(fbAuth, provider); } catch(e){ loginError(e); }
-    } else loginError(err);
-  }
+    } else if (c === "auth/popup-blocked") toast("로그인 창이 열리지 않았어요. 한 번 더 눌러 주세요.");
+    else loginError(err);
+  } finally { loginBusy = false; }
 }
 function loginError(err){
   const c = err && err.code;
@@ -1130,7 +1154,7 @@ function loginError(err){
 }
 async function logout(){
   saveMemoNow();
-  try { await fbMods.authM.signOut(fbAuth); toast("로그아웃했습니다."); } catch(e){ toast("로그아웃하지 못했습니다."); }
+  try { await fbMods.authM.signOut(fbAuth); LS.set("gn.pickAccount", true); toast("로그아웃했습니다."); } catch(e){ toast("로그아웃하지 못했습니다."); }
 }
 function handleWriteError(err, retry){
   const code = err && err.code;
@@ -1976,30 +2000,49 @@ function renderCharm(L, showWreath){
 
 /* ===================== 본문 팝업 ===================== */
 const EMBED_READER = true;   // 웹사이트 버전에서 true: claude.ai는 다른 사이트를 페이지 안에 넣을 수 없음
-let readerReturn = null;
+let readerReturn = null, readerPushed = false;
+// 대한성서공회 페이지에는 휴대폰 화면이 없어서, 좁은 화면에서는 컴퓨터 화면(가로 1000)으로 불러와
+// 본문 칸(왼쪽 30, 너비 638)만 화면 너비에 맞게 줄여 보여 주고 글자는 그만큼 키워서 부릅니다.
+const READER_PAGE_W = 1000, READER_COL_X = 30, READER_COL_W = 638;
+function layoutReader(){
+  const body = $("#readerBody"), fr = $("#readerFrame"), cw = body.clientWidth, ch = body.clientHeight;
+  if (!cw || cw >= 700){ fr.removeAttribute("style"); return 1; }
+  const s = cw / (READER_COL_W + 24);
+  fr.style.width = READER_PAGE_W + "px";
+  fr.style.height = Math.ceil(ch / s) + "px";
+  fr.style.transformOrigin = "0 0";
+  fr.style.transform = `translateX(${(-(READER_COL_X - 12) * s).toFixed(1)}px) scale(${s.toFixed(4)})`;
+  return s;
+}
 function openReader(opts){
   const R = readingFor(liturgy(sel));
   const o = opts || {ref: R.r, title: R.t, info: parseRef(R.r)};
-  const url = bskUrl(o.info);
+  const base = bskUrl(o.info);
   $("#readerK").textContent = `${o.kicker || mdw(sel)} · ${o.ref} · 개역개정`;
   $("#readerTitle").textContent = o.title;
-  $("#readerExt").href = url;
+  $("#readerExt").href = base; $("#readerExt2").href = base;
+  readerReturn = document.activeElement;
+  $("#reader").hidden = false;
+  document.documentElement.classList.add("noscroll");
+  const s = layoutReader();
+  const url = s < 1 ? `${base}&fontSize=${Math.max(16, Math.min(30, Math.round(16.5 / s)))}px` : base;
   const fr = $("#readerFrame");
   $("#readerLoading").hidden = false;
   fr.onload = () => { if (fr.src !== "about:blank") $("#readerLoading").hidden = true; };
   fr.src = url;
-  readerReturn = document.activeElement;
-  $("#reader").hidden = false;
-  document.documentElement.classList.add("noscroll");
+  try { history.pushState({reader: true}, ""); readerPushed = true; } catch(e){ readerPushed = false; }
   $("#readerClose").focus();
 }
-function closeReader(){
+function closeReader(fromHistory){
   if ($("#reader").hidden) return;
   $("#reader").hidden = true;
   document.documentElement.classList.remove("noscroll");
   $("#readerFrame").src = "about:blank";
+  if (readerPushed){ readerPushed = false; if (fromHistory !== true) try { history.back(); } catch(e){} }
   if (readerReturn && readerReturn.focus) readerReturn.focus();
 }
+window.addEventListener("popstate", () => { if (!$("#reader").hidden) closeReader(true); });
+window.addEventListener("resize", () => { if (!$("#reader").hidden) layoutReader(); });
 
 /* ===================== 휴대폰 탭 ===================== */
 const mq = matchMedia("(max-width: 759px)");
@@ -2125,7 +2168,7 @@ $("#loginBtn").addEventListener("click", login);
 $("#memoLogin").addEventListener("click", login);
 $("#logoutBtn").addEventListener("click", logout);
 $("#rLink").addEventListener("click", e => { if (!EMBED_READER || e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); openReader(); });
-$("#readerClose").addEventListener("click", closeReader);
+$("#readerClose").addEventListener("click", () => closeReader());
 $("#reader").addEventListener("click", e => { if (e.target.closest("[data-close]")) closeReader(); });
 $("#todayBtn").addEventListener("click", () => selectDate(today()));
 $("#prevWeek").addEventListener("click", () => selectDate(addDays(sel, -7)));
@@ -2282,7 +2325,7 @@ function tick(){
 })();
 
 /* ===================== 새 버전 안내 ===================== */
-const APP_VERSION = 10;
+const APP_VERSION = 11;
 let updateDismissed = 0, lastUpdateCheck = 0;
 async function checkForUpdate(force){
   if (location.protocol !== "https:" && !force) return;

@@ -169,8 +169,6 @@ button:disabled{cursor:not-allowed;opacity:.45}
 /* season note */
 .season-note{margin-top:20px;max-width:64em;padding:14px 18px;border-radius:16px;display:grid;gap:6px;
   background:color-mix(in srgb,var(--hero-fg) 7%,transparent);border:1px solid color-mix(in srgb,var(--hero-fg) 14%,transparent)}
-.sn-k{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--hero-fg);display:flex;align-items:center;gap:8px}
-.sn-k::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--flame);box-shadow:0 0 8px var(--flame)}
 .sn-p{font-size:14px;line-height:1.75;color:var(--hero-muted);text-wrap:pretty}
 .sn-p b{color:var(--hero-fg);font-weight:600}
 .sn-p:empty{display:none}
@@ -483,8 +481,7 @@ details summary{cursor:pointer;font-size:13px;color:var(--muted)}
       </div>
     </div>
 
-    <section class="season-note" aria-labelledby="snHead">
-      <p class="sn-k" id="snHead"></p>
+    <section class="season-note" aria-label="절기 설명" aria-live="polite">
       <p class="sn-p" id="snSpecial"></p>
       <p class="sn-p" id="snSeason"></p>
     </section>
@@ -935,14 +932,15 @@ const DAY_NOTES = {
   "삼위일체 주일": "성령강림주일 다음 주일로, 성부·성자·성령 한 분 하나님을 찬양하는 날입니다. 흰색을 씁니다."
 };
 function renderSeasonNote(L){
-  const name = L.season === "ordinary" ? "성령강림 후 절기" : SEASONS[L.season].name;
-  const day = DAY_NOTES[L.title];
-  $("#snHead").textContent = day ? `절기 이야기 · ${L.title}` : `절기 이야기 · ${name}`;
+  // 화면 색에서 고른 절기의 설명을 보여 주고, '자동'이면 그날의 절기를 따릅니다
+  const key = theme === "auto" ? L.season : theme;
+  const name = key === "ordinary" ? "성령강림 후 절기" : SEASONS[key].name;
+  const day = key === L.season ? DAY_NOTES[L.title] : undefined;
   const sp = $("#snSpecial"); sp.textContent = "";
   if (day){ const b = document.createElement("b"); b.textContent = L.title; sp.append(b, document.createTextNode(` · ${day}`)); }
   const ss = $("#snSeason"); ss.textContent = "";
   const b = document.createElement("b"); b.textContent = name;
-  ss.append(b, document.createTextNode(` · ${SEASON_NOTES[L.season]}`));
+  ss.append(b, document.createTextNode(` · ${SEASON_NOTES[key]}`));
 }
 
 /* ===================== 홈 화면 안내 ===================== */

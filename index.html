@@ -366,6 +366,9 @@ details summary{cursor:pointer;font-size:13px;color:var(--muted)}
 .migrate{display:grid;gap:8px;padding:12px;border-radius:12px;border:1px dashed var(--accent)}
 .migrate p{font-size:13.5px}
 .login-help{display:grid;gap:8px;padding:12px;border-radius:12px;border:1px dashed var(--warn);font-size:13px}
+.update-bar{position:fixed;z-index:55;top:calc(env(safe-area-inset-top, 0px) + 10px);left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 24px));display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border-radius:14px;background:var(--surface);color:var(--fg);border:1px solid var(--accent);box-shadow:var(--shadow);font-size:14px}
+.update-bar p{flex:1 1 200px;margin:0}
+.update-bar b{color:var(--accent)}
 .foot{padding-block:8px 36px;font-size:12.5px;color:var(--muted);display:grid;gap:6px}
 
 /* overlays */
@@ -667,6 +670,10 @@ details summary{cursor:pointer;font-size:13px;color:var(--muted)}
     </div>
     <footer class="reader-foot"><span>성경 본문 · 대한성서공회 개역개정</span><a id="readerExt" target="_blank" rel="noopener">본문이 보이지 않으면 새 창에서 열기 ↗</a></footer>
   </div>
+</div>
+<div class="update-bar" id="updateBar" role="status" hidden>
+  <p><b>새 버전이 있습니다.</b> 새로고침하면 바로 적용됩니다. 쓰던 메모는 먼저 저장됩니다.</p>
+  <div class="row"><button class="btn btn-sm btn-primary" id="updateNow" type="button">새로고침</button><button class="btn btn-sm" id="updateLater" type="button">나중에</button></div>
 </div>
 <div class="toast" id="toast" role="status" hidden></div>
 
@@ -1863,8 +1870,35 @@ function tick(){
   tick(); setInterval(tick, 1000);
   initStore();
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").then(r => { swReg = r; }).catch(() => {});
-  window.__app = {liturgy, readingFor, parseYmd, ymd, state};
+  window.__app = {liturgy, readingFor, parseYmd, ymd, state, checkForUpdate: f => checkForUpdate(f)};
 })();
+
+/* ===================== 새 버전 안내 ===================== */
+const APP_VERSION = 8;
+let updateDismissed = 0, lastUpdateCheck = 0;
+async function checkForUpdate(force){
+  if (location.protocol !== "https:" && !force) return;
+  const now = Date.now();
+  if (!force && now - lastUpdateCheck < 5 * 60000) return;
+  lastUpdateCheck = now;
+  try {
+    if (swReg) swReg.update().catch(() => {});
+    const txt = await (await fetch("sw.js?check=" + now, {cache: "no-store"})).text();
+    const m = txt.match(/bible-note-v(\d+)/), latest = m ? +m[1] : 0;
+    if (latest > APP_VERSION && latest !== updateDismissed){ $("#updateBar").dataset.v = latest; $("#updateBar").hidden = false; }
+  } catch(e){}
+}
+$("#updateNow").addEventListener("click", () => {
+  const dirty = memoDirty;
+  saveMemoNow();
+  $("#updateNow").disabled = true; $("#updateNow").textContent = "새로고침 중…";
+  setTimeout(() => location.reload(), dirty ? 1500 : 200);
+});
+$("#updateLater").addEventListener("click", () => { updateDismissed = +$("#updateBar").dataset.v; $("#updateBar").hidden = true; });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkForUpdate(); });
+setInterval(() => { if (document.visibilityState === "visible") checkForUpdate(); }, 30 * 60000);
+setTimeout(() => checkForUpdate(), 8000);
+
 </script>
 </body>
 </html>

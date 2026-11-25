@@ -273,24 +273,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 .hs-ico{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;border:1px solid var(--line);background:var(--surface);vertical-align:-6px;color:var(--accent)}
 .hs-ico svg{width:15px;height:15px}
 
-/* lectionary panel */
-.lect{display:grid;gap:10px}
-.lect-head{display:flex;align-items:baseline;justify-content:space-between;gap:6px 12px;flex-wrap:wrap}
-.lect h3{font-family:var(--font-display);font-size:19px;font-weight:700;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-.lect h3 small{font-family:var(--font-body);font-size:13px;font-weight:500;color:var(--accent)}
-.lect-src{font-size:11.5px;color:var(--muted);letter-spacing:.04em}
-.lect-when{font-size:13px;color:var(--muted)}
-#lectList{display:grid;gap:14px}
-.lect-set{display:grid;gap:6px}
-.lect-occ{font-size:13.5px;font-weight:600}
-.lect dl{margin:0;display:grid;gap:1px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
-.lect dl > div{display:grid;grid-template-columns:52px minmax(0,1fr);gap:10px;padding:9px 12px;background:var(--sunk)}
-.lect dt{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent);padding-top:2px}
-.lect dd{margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;font-size:14.5px;min-width:0}
-.lect dd a{color:var(--fg);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--accent) 45%,transparent);text-underline-offset:3px;overflow-wrap:anywhere}
-.lect dd a:hover{text-decoration-color:var(--accent);color:var(--accent)}
-.lect-or{font-size:11.5px;color:var(--muted)}
-
 /* calendar card */
 .cal-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 14px 16px;display:grid;gap:12px;min-width:0}
 .cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px}
@@ -541,16 +523,6 @@ details summary{cursor:pointer;font-size:13px;color:var(--muted)}
       </div>
     </article>
 
-    <section class="paper lect" aria-labelledby="lectHead" data-pane="read">
-      <div class="lect-head">
-        <h3 id="lectHead">교회력 성서일과 <small id="lectYear"></small></h3>
-        <span class="lect-src">KMC 성서일과 · RCL 3년 주기</span>
-      </div>
-      <p class="lect-when" id="lectWhen"></p>
-      <div id="lectList"></div>
-      <p class="note">해마다 마태(가해)·마가(나해)·누가(다해)복음을 차례로 읽는 3년 주기입니다. 본문을 누르면 개역개정 본문이 열립니다.</p>
-    </section>
-
     <section class="paper memo" aria-labelledby="memoHead" data-pane="note">
       <h3 id="memoHead">묵상 노트 <small id="memoDate"></small></h3>
       <p class="memo-prompt" id="memoPrompt"></p>
@@ -703,7 +675,7 @@ details summary{cursor:pointer;font-size:13px;color:var(--muted)}
 /* ===================== 교회력 계산 ===================== */
 const BOOK = {"창세기":"gen","출애굽기":"exo","레위기":"lev","민수기":"num","신명기":"deu","여호수아":"jos","사사기":"jdg","룻기":"rut","사무엘상":"1sa","사무엘하":"2sa","열왕기상":"1ki","열왕기하":"2ki","역대상":"1ch","역대하":"2ch","에스라":"ezr","느헤미야":"neh","에스더":"est","욥기":"job","시편":"psa","잠언":"pro","전도서":"ecc","아가":"sng","이사야":"isa","예레미야":"jer","예레미야애가":"lam","에스겔":"ezk","다니엘":"dan","호세아":"hos","요엘":"jol","아모스":"amo","오바댜":"oba","요나":"jnh","미가":"mic","나훔":"nam","하박국":"hab","스바냐":"zep","학개":"hag","스가랴":"zec","말라기":"mal","마태복음":"mat","마가복음":"mrk","누가복음":"luk","요한복음":"jhn","사도행전":"act","로마서":"rom","고린도전서":"1co","고린도후서":"2co","갈라디아서":"gal","에베소서":"eph","빌립보서":"php","골로새서":"col","데살로니가전서":"1th","데살로니가후서":"2th","디모데전서":"1ti","디모데후서":"2ti","디도서":"tit","빌레몬서":"phm","히브리서":"heb","야고보서":"jas","베드로전서":"1pe","베드로후서":"2pe","요한일서":"1jn","요한이서":"2jn","요한삼서":"3jn","유다서":"jud","요한계시록":"rev"};
 const CYCLE = {A:{name:"가해", gospel:"마태복음"}, B:{name:"나해", gospel:"마가복음"}, C:{name:"다해", gospel:"누가복음"}};
-let READINGS = null, LECT = null, dataError = false;
+let READINGS = null, dataError = false;
 const SEASONS = {
   advent:   {name:"대림절",     color:"보라",       sw:"#6b4fa0"},
   christmas:{name:"성탄절",     color:"흰색·금색",  sw:"#efe4c6"},
@@ -828,64 +800,6 @@ function readingFor(L){
       if (L.prep) return toEntry(P.PREP[L.prepIdx], "대림 준비 · 깨어 있음");
       return toEntry(pick(P.ORD, L.idx-1), "성령강림 후 · 일상의 제자도");
   }
-}
-/* ===================== 성서일과 (KMC · RCL 3년 주기) ===================== */
-const ORDINAL = ["First","Second","Third","Fourth","Fifth","Sixth","Seventh","Eighth","Ninth"];
-function occasionKeys(L, d){
-  const md2 = `${d.getMonth()+1}-${d.getDate()}`;
-  switch (L.season){
-    case "advent":
-      if (L.eve) return [["Nativity of the Lord - Proper I", "성탄 전야"]];
-      return L.dow === 0 ? [[`${ORDINAL[L.week-1]} Sunday of Advent`, L.title]] : [];
-    case "christmas":
-      if (L.idx === 0) return [["Nativity of the Lord - Proper III", "성탄절"]];
-      if (md2 === "12-31" || md2 === "1-1") return [["New Year's Day", md2 === "1-1" ? "새해 첫날" : "송구영신"]];
-      if (L.dow === 0) return [[d.getMonth() === 11 ? "First Sunday after Christmas Day" : "Second Sunday after Christmas Day", d.getMonth() === 11 ? "성탄 후 제1주" : "성탄 후 제2주"]];
-      return [];
-    case "epiphany": {
-      if (L.idx === 0) return [["Epiphany of the Lord", "주현절"]];
-      if (L.dow !== 0) return [];
-      if (L.baptism) return [["Baptism of the Lord", L.title]];
-      if (L.transfig) return [["Transfiguration Sunday", L.title]];
-      const m = L.title.match(/제(\d+)주/); const wk = m ? +m[1] : 2;
-      return [[`${ORDINAL[Math.min(wk, 9) - 1]} Sunday after the Epiphany`, L.title]];
-    }
-    case "lent":
-      if (L.idx === 0) return [["Ash Wednesday", "재의 수요일"]];
-      if (L.dow !== 0) return [];
-      { const m = L.title.match(/제(\d+)주/); return m ? [[`${ORDINAL[+m[1]-1]} Sunday in Lent`, L.title]] : []; }
-    case "holyweek":
-      return [[["Liturgy of the Palms","Monday of Holy Week","Tuesday of Holy Week","Wednesday of Holy Week","Maundy Thursday","Good Friday","Holy Saturday"][L.idx], L.title]]
-        .concat(L.idx === 0 ? [["Liturgy of the Passion", "고난주일"]] : []);
-    case "easter":
-      if (L.idx === 0) return [["Resurrection of the Lord", "부활주일"]];
-      if (L.asc) return [["Ascension of the Lord", "주님 승천일"]];
-      if (L.dow !== 0) return [];
-      return [[`${ORDINAL[Math.floor(L.idx/7)]} Sunday of Easter`, L.title]];
-    case "pentecost": return [["Day of Pentecost", "성령강림주일"]];
-    default: {
-      if (L.dow !== 0) return [];
-      if (L.title === "삼위일체 주일") return [["Trinity Sunday", L.title]];
-      const n = Math.max(3, Math.min(29, 4 + Math.floor((dayNum(d) - dayNum(new Date(d.getFullYear(), 4, 29))) / 7)));
-      const name = n === 29 ? "Reign of Christ - Proper 29 (34)" : `Proper ${n} (${n + 5})`;
-      const label = L.thanks ? (L.sub || "성령강림 후 주일") : (L.sub ? `${L.title} · ${L.sub}` : L.title);
-      const out = [[name, label]];
-      if (L.thanks) out.push(["Thanksgiving Day", "추수감사주일"]);
-      return out;
-    }
-  }
-}
-function lectionaryFor(d){
-  // 주일·절기는 그날, 주중에는 지난 주일의 성서일과
-  let L = liturgy(d), keys = occasionKeys(L, d), day = d, past = false;
-  if (!keys.length){ day = addDays(d, -d.getDay()); L = liturgy(day); keys = occasionKeys(L, day); past = true; }
-  const T = LECT && LECT[L.year];
-  return {day, past, year: L.year, sy: L.sy, sets: keys.map(([k, label]) => ({label, e: T && T[k]})).filter(s => s.e)};
-}
-function parseLectRef(ref){
-  const m = ref.match(/^(.+?)\s+(\d+)(?::\(?(\d+))?/);
-  if (!m) return null;
-  return {book:m[1], code:BOOK[m[1]] || "", chap:+m[2], v1: m[3] ? +m[3] : 1};
 }
 function parseRef(ref){
   const m = ref.match(/^(.+?) (\d+):(\d+)(?:-(\d+))?$/);
@@ -1250,38 +1164,6 @@ function renderReading(){
   $("#memoPrompt").textContent = `${R.r} · 적용 질문: ${R.q}`;
   $("#memoDate").textContent = `${sel.getFullYear()}년 ${mdw(sel)}`;
   renderUnlock();
-  renderLect();
-}
-function renderLect(){
-  const box = $("#lectList"); box.textContent = "";
-  const info = lectionaryFor(sel), C = CYCLE[info.year];
-  $("#lectYear").textContent = `${info.sy}–${String(info.sy+1).slice(2)} ${C.name} · ${C.gospel}의 해`;
-  const dayTxt = `${info.day.getMonth()+1}월 ${info.day.getDate()}일`;
-  $("#lectWhen").textContent = info.past ? `주중에는 지난 주일(${dayTxt}) 본문을 함께 묵상합니다` : `${dayTxt} 본문`;
-  if (!LECT){ const p = document.createElement("p"); p.className = "muted"; p.textContent = dataError ? "성서일과를 불러오지 못했습니다." : "성서일과를 불러오는 중입니다."; box.appendChild(p); return; }
-  const SLOTS = [["ot","구약"],["ps","시편"],["ep","서신"],["go","복음"]];
-  info.sets.forEach(s => {
-    const g = document.createElement("div"); g.className = "lect-set";
-    const h = document.createElement("p"); h.className = "lect-occ"; h.textContent = s.label; g.appendChild(h);
-    const dl = document.createElement("dl");
-    SLOTS.forEach(([k, name]) => {
-      const refs = s.e[k] || []; if (!refs.length) return;
-      const row = document.createElement("div");
-      const dt = document.createElement("dt"); dt.textContent = name;
-      const dd = document.createElement("dd");
-      refs.forEach((ref, i) => {
-        if (i) { const or = document.createElement("span"); or.className = "lect-or"; or.textContent = "혹은"; dd.appendChild(or); }
-        const pr = parseLectRef(ref), a = document.createElement("a");
-        a.textContent = ref; a.target = "_blank"; a.rel = "noopener";
-        if (pr && pr.code) a.href = bskUrl(pr);
-        a.dataset.ref = ref; a.dataset.title = `${s.label} · ${name}`; a.dataset.kicker = dayTxt;
-        dd.appendChild(a);
-      });
-      row.append(dt, dd); dl.appendChild(row);
-    });
-    g.appendChild(dl); box.appendChild(g);
-  });
-  if (!info.sets.length){ const p = document.createElement("p"); p.className = "muted"; p.textContent = "이 날에 해당하는 성서일과가 없습니다."; box.appendChild(p); }
 }
 function renderUnlock(){
   const el = $("#unlockNote");
@@ -1826,12 +1708,6 @@ $("#loginBtn").addEventListener("click", login);
 $("#memoLogin").addEventListener("click", login);
 $("#logoutBtn").addEventListener("click", logout);
 $("#rLink").addEventListener("click", e => { if (!EMBED_READER || e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); openReader(); });
-$("#lectList").addEventListener("click", e => {
-  const a = e.target.closest("a[data-ref]");
-  if (!a || !EMBED_READER || e.metaKey || e.ctrlKey || e.shiftKey) return;
-  e.preventDefault();
-  openReader({ref: a.dataset.ref, title: a.dataset.title, kicker: a.dataset.kicker, info: parseLectRef(a.dataset.ref)});
-});
 $("#readerClose").addEventListener("click", closeReader);
 $("#reader").addEventListener("click", e => { if (e.target.closest("[data-close]")) closeReader(); });
 $("#prevDay").addEventListener("click", () => selectDate(addDays(sel,-1)));
@@ -1981,8 +1857,8 @@ function tick(){
   applyView();
   renderAll();
   renderHomeScreen();
-  Promise.all([fetch("readings.json").then(r => { if (!r.ok) throw 0; return r.json(); }), fetch("lectionary.json").then(r => { if (!r.ok) throw 0; return r.json(); })])
-    .then(([r, l]) => { READINGS = r; LECT = l; renderAll(); })
+  fetch("readings.json").then(r => { if (!r.ok) throw 0; return r.json(); })
+    .then(r => { READINGS = r; renderAll(); })
     .catch(() => { dataError = true; renderAll(); });
   tick(); setInterval(tick, 1000);
   initStore();

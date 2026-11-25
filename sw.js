@@ -1,6 +1,6 @@
 // 성경묵상노트 서비스 워커: 홈 화면 앱 설치, 오프라인 화면, 알림 클릭 처리
 // 새 버전을 올릴 때마다 아래 번호를 하나씩 올립니다. 앱은 이 번호로 새 버전이 있는지 알아봅니다.
-const CACHE = "bible-note-v8";
+const CACHE = "bible-note-v10";
 const SHELL = ["./", "./index.html", "./firebase-config.js", "./readings.json", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

@@ -1788,17 +1788,19 @@ function svgUrl(vb, body){
 const rasterCache = new Map();
 let rasterQueue = Promise.resolve(), artCacheP = null;
 function artCache(){
-  if (!artCacheP) artCacheP = (async () => { try { return window.caches ? await caches.open("gn-art-v1") : null; } catch(e){ return null; } })();
+  if (!artCacheP) artCacheP = (async () => { try { if (!window.caches) return null; caches.delete("gn-art-v1").catch(() => {}); return await caches.open("gn-art-v2"); } catch(e){ return null; } })();
   return artCacheP;
 }
 function fnv(s){ let h = 0x811c9dc5; for (let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(36) + s.length.toString(36); }
-function drawPng(url, W, H){
+function drawPng(url, W, H, deepen){
   return new Promise(res => {
     const im = new Image();
     im.onload = () => {
       try {
         const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
-        cv.getContext("2d").drawImage(im, 0, 0, W, H);
+        const g = cv.getContext("2d");
+        g.drawImage(im, 0, 0, W, H);
+        if (deepen){ g.globalAlpha = 0.4; g.drawImage(im, 0, 0, W, H); g.globalAlpha = 1; }
         cv.toBlob(bl => res(bl), "image/png");
       } catch(e){ res(null); }
     };
@@ -1806,20 +1808,20 @@ function drawPng(url, W, H){
     im.src = url;
   });
 }
-async function rasterJob(url, W, H, keep){
-  const ck = `https://art.local/${W}x${H}/${fnv(url)}`, cache = keep ? await artCache() : null;
+async function rasterJob(url, W, H, keep, deepen){
+  const ck = `https://art.local/${W}x${H}${deepen ? "d" : ""}/${fnv(url)}`, cache = keep ? await artCache() : null;
   if (cache){ try { const hit = await cache.match(ck); if (hit) return URL.createObjectURL(await hit.blob()); } catch(e){} }
   await new Promise(r => setTimeout(r, 0));
-  const bl = await drawPng(url, W, H);
+  const bl = await drawPng(url, W, H, deepen);
   if (!bl) return url;
   if (cache) cache.put(ck, new Response(bl, {headers: {"Content-Type": "image/png"}})).catch(() => {});
   return URL.createObjectURL(bl);
 }
-function rasterize(url, w, h, cap, keep){
+function rasterize(url, w, h, cap, keep, deepen){
   const dpr = Math.min(cap || 1.5, window.devicePixelRatio || 1), W = Math.max(1, Math.round(w * dpr)), H = Math.max(1, Math.round(h * dpr));
-  const key = W + "x" + H + "|" + url;
+  const dp = deepen !== false, key = W + "x" + H + (dp ? "d" : "") + "|" + url;
   if (!rasterCache.has(key)){
-    const job = rasterQueue.then(() => rasterJob(url, W, H, keep !== false));
+    const job = rasterQueue.then(() => rasterJob(url, W, H, keep !== false, dp));
     rasterQueue = job.catch(() => {});
     rasterCache.set(key, job.catch(() => url));
   }
@@ -1827,7 +1829,7 @@ function rasterize(url, w, h, cap, keep){
 }
 function paintImg(img, vb, body, cssW, keep){
   const url = svgUrl(vb, body), p = vb.split(/\s+/).map(Number);
-  const w = cssW || img.clientWidth || (img.parentElement && img.parentElement.clientWidth) || Math.min(innerWidth - 32, 560);
+  const w = (cssW > 40 ? cssW : 0) || (img.clientWidth > 40 ? img.clientWidth : 0) || ((img.parentElement && img.parentElement.clientWidth > 40) ? img.parentElement.clientWidth : 0) || Math.min(innerWidth - 32, 560);
   img.style.aspectRatio = `${p[2]} / ${p[3]}`;
   img.dataset.want = url;
   return rasterize(url, w, w * p[3] / p[2], 1.5, keep).then(src => { if (img.dataset.want === url) img.src = src; });
@@ -1889,7 +1891,7 @@ function paintBackdrop(){
     el.style.backgroundRepeat = L.map(x => x[2]).join(",");
   };
   if (st === "wc"){
-    rasterize(bloomUrl(w, h), w, h, 0.5).then(src => { if (backdropKey !== key) return; L.push([`url("${src}")`, "100% 100%", "no-repeat"]); apply(); });
+    rasterize(bloomUrl(w, h), w, h, 0.5, true, false).then(src => { if (backdropKey !== key) return; L.push([`url("${src}")`, "100% 100%", "no-repeat"]); apply(); });
   }
   apply();
 }
@@ -2042,7 +2044,7 @@ function renderWoodPrint(L, showWreath){
   const wb = $("#wkBand");
   const bk = pat + (LITE ? cssVar("--acc2") : "");
   if (wb.dataset.p !== bk){
-    if (LITE){ wb.innerHTML = ""; rasterize(svgUrl("0 0 720 18", WOOD_DEFS + `<rect width="720" height="18" fill="url(#${pat})" filter="url(#wp-carve)"/>`), 720, 18, 2).then(src => { if (wb.dataset.p === bk) wb.style.backgroundImage = `url("${src}")`; }); }
+    if (LITE){ wb.innerHTML = ""; rasterize(svgUrl("0 0 720 18", WOOD_DEFS + `<rect width="720" height="18" fill="url(#${pat})" filter="url(#wp-carve)"/>`), 720, 18, 2, true, false).then(src => { if (wb.dataset.p === bk) wb.style.backgroundImage = `url("${src}")`; }); }
     else wb.innerHTML = `<svg width="100%" height="18" aria-hidden="true"><rect width="100%" height="18" fill="url(#${pat})" filter="url(#wp-carve)"/></svg>`;
     wb.dataset.p = bk;
   }
@@ -2187,7 +2189,7 @@ function renderTracker(){
   if (box.dataset.sig === r.key) return;
   box.dataset.sig = r.key;
   box.innerHTML = `<i class="tape" aria-hidden="true"></i><div class="tr-head"><h3></h3><span></span></div>${r.svg()}<p class="tr-count"></p>`;
-  if (LITE){ const im = box.querySelector("img.art"); paintImg(im, r.vb, PENCIL_DEFS + r.body, im.parentElement.clientWidth - 40, false); }
+  if (LITE){ const im = box.querySelector("img.art"); paintImg(im, r.vb, PENCIL_DEFS + r.body, Math.max(0, im.parentElement.clientWidth - 40), false); }
   box.querySelector("h3").textContent = r.title;
   box.querySelector(".tr-head span").textContent = r.sub;
   box.querySelector(".tr-count").textContent = r.done ? `색칠한 ${r.unit} ${r.done}` : "묵상을 마치면 한 칸씩 색칠돼요";
@@ -2567,7 +2569,7 @@ function hideSplash(){
 })();
 
 /* ===================== 새 버전 안내 ===================== */
-const APP_VERSION = 12;
+const APP_VERSION = 13;
 let updateDismissed = 0, lastUpdateCheck = 0;
 async function checkForUpdate(force){
   if (location.protocol !== "https:" && !force) return;
